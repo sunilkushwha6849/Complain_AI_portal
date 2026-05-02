@@ -142,6 +142,11 @@ def verify_otp():
 def submit_complaint():
     try:
         data = request.get_json() or {}
+        # Frontend citizen_name/raw_text bhi support karo
+        if 'citizen_name' in data and 'name' not in data:
+            data['name'] = data['citizen_name']
+        if 'raw_text' in data and 'complaint' not in data:
+            data['complaint'] = data['raw_text']
         required = ['name', 'mobile', 'complaint']
         for f in required:
             if not data.get(f):
