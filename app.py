@@ -50,16 +50,43 @@ TWILIO_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE = os.environ.get('TWILIO_PHONE_NUMBER', '')
 
 def send_sms(to, body):
-    if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_PHONE):
-        print(f"[SMS TEST] To: {to} | {body}")
-        return True
-    try:
-        from twilio.rest import Client
-        Client(TWILIO_SID, TWILIO_TOKEN).messages.create(body=body, from_=TWILIO_PHONE, to=to)
-        return True
-    except Exception as e:
-        print(f"[SMS ERROR] {e}")
-        return False
+    FAST2SMS_KEY = os.environ.get('FAST2SMS_API_KEY', '')
+
+    # Fast2SMS use karo agar key hai
+    if FAST2SMS_KEY:
+        try:
+            import requests as req
+            otp_code = ''.join(filter(str.isdigit, body))[:6]
+            r = req.post(
+                'https://www.fast2sms.com/dev/bulkV2',
+                headers={'authorization': FAST2SMS_KEY},
+                json={
+                    'route': 'otp',
+                    'variables_values': otp_code,
+                    'numbers': to,
+                },
+                timeout=10
+            )
+            res = r.json()
+            print(f"[FAST2SMS] {res}")
+            return res.get('return', False)
+        except Exception as e:
+            print(f"[FAST2SMS ERROR] {e}")
+            return False
+
+    # Twilio fallback
+    if TWILIO_SID and TWILIO_TOKEN and TWILIO_PHONE:
+        try:
+            from twilio.rest import Client
+            Client(TWILIO_SID, TWILIO_TOKEN).messages.create(body=body, from_=TWILIO_PHONE, to=to)
+            return True
+        except Exception as e:
+            print(f"[TWILIO ERROR] {e}")
+            return False
+
+    # Test mode
+    print(f"[OTP TEST] To: {to} | {body}")
+    return True
 
 def gen_otp():
     return ''.join(random.choices(string.digits, k=6))
