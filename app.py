@@ -77,7 +77,8 @@ def login():
     return send_from_directory(STATIC_DIR, 'login.html')
 
 # ─── OTP Routes ───────────────────────────────────────────────────────────────
-@app.route('/api/send-otp', methods=['POST'])
+@app.route("/api/otp/send", methods=["POST"])
+@app.route("/api/send-otp", methods=["POST"])
 def send_otp():
     try:
         data   = request.get_json() or {}
@@ -102,7 +103,8 @@ def send_otp():
         print(f"[OTP ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/verify-otp', methods=['POST'])
+@app.route("/api/otp/verify", methods=["POST"])
+@app.route("/api/verify-otp", methods=["POST"])
 def verify_otp():
     try:
         data   = request.get_json() or {}
@@ -349,3 +351,105 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     print(f"\n✅ Server: http://localhost:{port}\n")
     app.run(host='0.0.0.0', port=port, debug=False)
+
+# ─── Auth Routes (login.html ke liye) ────────────────────────────────────────
+import hashlib
+
+def hash_password(pw):
+    return hashlib.sha256(pw.encode()).hexdigest()
+
+@app.route('/api/auth/register', methods=['POST'])
+def auth_register():
+    try:
+        data     = request.get_json() or {}
+        mobile   = data.get('mobile', '').strip()
+        name     = data.get('name', '').strip()
+        password = data.get('password', '').strip()
+        email    = data.get('email', '').strip()
+        otp      = data.get('otp', '').strip()
+
+        if not mobile or not password:
+            return jsonify({'success': False, 'error': 'Mobile aur password zaroori hai'}), 400
+
+        # OTP verify karo
+        conn = get_conn()
+        cur  = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s", (mobile, otp))
+        row  = to_dict(cur, cur.fetchone())
+        if not row:
+            conn.close()
+            return jsonify({'success': False, 'error': 'OTP galat hai'}), 400
+
+        pw_hash = hash_password(password)
+        try:
+            qexec(conn, """INSERT INTO citizens (mobile, name, email, password_hash, verified)
+                           VALUES (%s, %s, %s, %s, %s)
+                           ON CONFLICT (mobile) DO UPDATE SET
+                           name=%s, email=%s, password_hash=%s, verified=%s""",
+                  (mobile, name, email, pw_hash, True if USE_POSTGRES else 1,
+                   name, email, pw_hash, True if USE_POSTGRES else 1))
+            conn.commit()
+        except Exception as e:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Mobile already registered hai'}), 400
+
+        conn.close()
+        return jsonify({'success': True, 'message': 'Registration successful', 'name': name, 'mobile': mobile})
+    except Exception as e:
+        print(f"[REGISTER ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    try:
+        data     = request.get_json() or {}
+        mobile   = data.get('mobile', '').strip()
+        password = data.get('password', '').strip()
+
+        if not mobile or not password:
+            return jsonify({'success': False, 'error': 'Mobile aur password daalo'}), 400
+
+        conn    = get_conn()
+        pw_hash = hash_password(password)
+        cur     = qexec(conn, "SELECT * FROM citizens WHERE mobile = %s AND password_hash = %s", (mobile, pw_hash))
+        row     = to_dict(cur, cur.fetchone())
+
+        if not row:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Mobile ya password galat hai'}), 401
+
+        qexec(conn, "UPDATE citizens SET last_login = %s WHERE mobile = %s",
+              (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), mobile))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Login successful',
+                        'name': row.get('name', ''), 'mobile': mobile})
+    except Exception as e:
+        print(f"[LOGIN ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    try:
+        data        = request.get_json() or {}
+        mobile      = data.get('mobile', '').strip()
+        otp         = data.get('otp', '').strip()
+        new_password = data.get('new_password', '').strip()
+
+        if not mobile or not otp or not new_password:
+            return jsonify({'success': False, 'error': 'Saari details daalo'}), 400
+
+        conn = get_conn()
+        cur  = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s", (mobile, otp))
+        row  = to_dict(cur, cur.fetchone())
+        if not row:
+            conn.close()
+            return jsonify({'success': False, 'error': 'OTP galat hai'}), 400
+
+        pw_hash = hash_password(new_password)
+        qexec(conn, "UPDATE citizens SET password_hash = %s WHERE mobile = %s", (pw_hash, mobile))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'message': 'Password reset ho gaya'})
+    except Exception as e:
+        print(f"[RESET ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
