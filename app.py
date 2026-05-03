@@ -50,38 +50,20 @@ TWILIO_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE = os.environ.get('TWILIO_PHONE_NUMBER', '')
 
 def send_sms(to, body):
-    FAST2SMS_KEY = os.environ.get('FAST2SMS_API_KEY', '')
+    API_KEY = os.environ.get('FAST2SMS_API_KEY', '')
 
-    # Fast2SMS use karo agar key hai
-    if FAST2SMS_KEY:
+    # 2Factor.in use karo agar key hai
+    if API_KEY:
         try:
             import requests as req
             otp_code = ''.join(filter(str.isdigit, body))[:6]
-            r = req.post(
-                'https://www.fast2sms.com/dev/bulkV2',
-                headers={'authorization': FAST2SMS_KEY},
-                json={
-                    'route': 'otp',
-                    'variables_values': otp_code,
-                    'numbers': to,
-                },
-                timeout=10
-            )
+            url = f"https://2factor.in/API/V1/{API_KEY}/SMS/{to}/{otp_code}/OTP1"
+            r = req.get(url, timeout=10)
             res = r.json()
-            print(f"[FAST2SMS] {res}")
-            return res.get('return', False)
+            print(f"[2FACTOR] {res}")
+            return res.get('Status') == 'Success'
         except Exception as e:
-            print(f"[FAST2SMS ERROR] {e}")
-            return False
-
-    # Twilio fallback
-    if TWILIO_SID and TWILIO_TOKEN and TWILIO_PHONE:
-        try:
-            from twilio.rest import Client
-            Client(TWILIO_SID, TWILIO_TOKEN).messages.create(body=body, from_=TWILIO_PHONE, to=to)
-            return True
-        except Exception as e:
-            print(f"[TWILIO ERROR] {e}")
+            print(f"[2FACTOR ERROR] {e}")
             return False
 
     # Test mode
