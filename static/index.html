@@ -4,7 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GrievAI Portal | MP Government</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/></noscript>
 <style>
 :root {
   --saffron: #FF6200;
@@ -1038,34 +1041,32 @@ input[type="password"], input[type="number"], textarea, select {
 }
 input[type="file"] { cursor: pointer !important; }
 
-
-
-
-
-/* ===== USER SELECT FIX ===== */
-body, body * {
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
+/* Text Select Fix - Sirf input/textarea mein select hoga */
+* { 
+  -webkit-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
+  user-select: none; 
 }
-input, input[type="text"], input[type="tel"], input[type="email"],
-input[type="password"], input[type="number"], input[type="search"],
-input[type="url"], textarea, .otp-box {
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-  user-select: text !important;
+input, textarea, [contenteditable="true"] { 
+  -webkit-user-select: text !important; 
+  -moz-user-select: text !important; 
+  user-select: text !important; 
 }
-/* ===== END ===== */
 
+@media (max-width: 768px) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.1s !important; }
+  .particle { animation-duration: 20s !important; animation-iteration-count: infinite !important; }
+  .logo-badge { animation: none !important; }
+  .orb { animation-duration: 30s !important; }
+}
 </style>
 </head>
 <body>
 <!-- Floating Particles -->
 <script>
 const isMobile = window.innerWidth < 768;
-const particleCount = isMobile ? 15 : 40;
+const particleCount = isMobile ? 8 : 30;
 for(let i = 0; i < particleCount; i++) {
   let p = document.createElement('div');
   p.className = 'particle';
@@ -1674,39 +1675,45 @@ async function trackComplaint() {
 }
 
 // Load Home
-async function loadHome() {
-  const icons = { 'Water Supply':'💧','Roads & PWD':'🛣️','Electricity':'⚡','Sanitation':'🗑️','Public Services':'📋','Healthcare':'🏥' };
+// Cache API responses
+let _cache = {};
+async function apiFetch(url, ttl=30000) {
+  let now = Date.now();
+  if(_cache[url] && (now - _cache[url].t) < ttl) return _cache[url].d;
   try {
-    const d = await (await fetch('/api/departments')).json();
-    document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep => `
-      <div class="dept-row">
-        <span>${icons[dep.name] || '🏢'} ${dep.name}</span>
-        <span style="color:var(--saffron); font-weight:700;">${dep.officer_name}</span>
-      </div>
-    `).join('');
+    let d = await (await fetch(url)).json();
+    _cache[url] = {d, t: now};
+    return d;
+  } catch(e) { return _cache[url]?.d || {}; }
+}
+
+async function loadHome() {
+  const icons = {'Water Supply':'💧','Roads & PWD':'🛣️','Electricity':'⚡','Sanitation':'🗑️','Public Services':'📋','Healthcare':'🏥'};
+  const [d, a] = await Promise.all([apiFetch('/api/departments'), apiFetch('/api/analytics')]);
+  try {
+    document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep =>
+      `<div class="dept-row"><span>${icons[dep.name]||'🏢'} ${dep.name}</span><span style="color:var(--saffron);font-weight:700;">${dep.officer_name}</span></div>`
+    ).join('');
   } catch(e) {}
   try {
-    const a = await (await fetch('/api/analytics')).json();
     document.getElementById('stat-total').innerText = a.summary?.total_complaints || 0;
     document.getElementById('stat-resolved').innerText = a.summary?.resolved_today || 0;
     document.getElementById('stat-critical').innerText = a.priority_stats?.critical || 0;
   } catch(e) {}
 }
 
-// Load Dashboard
 async function loadDashboard() {
+  const [a, d] = await Promise.all([apiFetch('/api/analytics'), apiFetch('/api/departments')]);
   try {
-    const a = await (await fetch('/api/analytics')).json();
     document.getElementById('dashTotal').innerText = a.summary?.total_complaints || 0;
     document.getElementById('dashResolved').innerText = a.summary?.resolved_today || 0;
     document.getElementById('dashCritical').innerText = a.priority_stats?.critical || 0;
-    const d = await (await fetch('/api/departments')).json();
-    document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.05); animation:slideInLeft 0.3s ease;">
+    document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
         <span>${dep.name}</span>
-        <span style="background:linear-gradient(135deg, #FFF0E6, #FFE0CC); padding:4px 12px; border-radius:30px; font-weight:700;">${dep.complaint_count} शिकायतें</span>
-      </div>
-    `).join('');
+        <span style="background:linear-gradient(135deg,#FFF0E6,#FFE0CC);padding:4px 12px;border-radius:30px;font-weight:700;">${dep.complaint_count} शिकायतें</span>
+      </div>`
+    ).join('');
   } catch(e) {}
 }
 
