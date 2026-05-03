@@ -467,3 +467,148 @@ def reset_password():
     except Exception as e:
         print(f"[RESET ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ─── Email Auth Routes ────────────────────────────────────────────────────────
+import secrets
+
+@app.route('/api/auth/register', methods=['POST'])
+def email_register():
+    try:
+        data     = request.get_json() or {}
+        name     = data.get('name', '').strip()
+        email    = data.get('email', '').strip().lower()
+        password = data.get('password', '').strip()
+
+        if not name or not email or not password:
+            return jsonify({'success': False, 'error': 'सभी fields भरें'}), 400
+        if len(password) < 6:
+            return jsonify({'success': False, 'error': 'Password 6+ अक्षर होना चाहिए'}), 400
+
+        pw_hash = hash_password(password)
+        token   = secrets.token_urlsafe(32)
+        conn    = get_conn()
+
+        try:
+            qexec(conn, """INSERT INTO citizens (mobile, name, email, password_hash, verified)
+                           VALUES (%s, %s, %s, %s, %s)""",
+                  (email, name, email, pw_hash, False))
+            qexec(conn, """INSERT INTO otp_verifications (mobile, otp, expires_at)
+                           VALUES (%s, %s, %s)""",
+                  (email, token, (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')))
+            conn.commit()
+        except Exception:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Email already registered है'}), 400
+
+        conn.close()
+
+        verify_url = f"{APP_URL}/api/auth/verify-email?token={token}&email={email}"
+        send_email(email, 'GrievAI — Email Verify करें', f"""
+        <h2>नमस्ते {name}! 🙏</h2>
+        <p>GrievAI Portal पर Register करने के लिए धन्यवाद!</p>
+        <p>नीचे दिए बटन पर click करके अपना account activate करें:</p>
+        <a href="{verify_url}" style="display:inline-block;padding:14px 28px;background:#FF6200;color:#fff;border-radius:30px;text-decoration:none;font-weight:bold;margin:20px 0;">
+          ✅ Email Verify करें
+        </a>
+        <p style="color:#999;font-size:12px;">यह link 24 घंटे valid है।</p>
+        """)
+
+        return jsonify({'success': True, 'message': 'Verification email भेज दिया गया! Email खोलें और link click करें।'})
+    except Exception as e:
+        print(f"[EMAIL REGISTER ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/auth/verify-email', methods=['GET'])
+def verify_email():
+    token = request.args.get('token', '')
+    email = request.args.get('email', '').lower()
+    try:
+        conn = get_conn()
+        cur  = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s", (email, token))
+        row  = to_dict(cur, cur.fetchone())
+        if not row:
+            conn.close()
+            return "<h2>❌ Invalid या Expired Link</h2><p><a href='/login.html'>Login करें</a></p>"
+
+        qexec(conn, "UPDATE citizens SET verified = %s WHERE email = %s",
+              (True if USE_POSTGRES else 1, email))
+        qexec(conn, "DELETE FROM otp_verifications WHERE mobile = %s AND otp = %s", (email, token))
+        conn.commit()
+        conn.close()
+        return """<html><body style='font-family:sans-serif;text-align:center;padding:50px;'>
+        <h1>✅ Email Verified!</h1>
+        <p>आपका account activate हो गया।</p>
+        <a href='/login.html' style='display:inline-block;padding:14px 28px;background:#FF6200;color:#fff;border-radius:30px;text-decoration:none;font-weight:bold;margin-top:20px;'>🔐 Login करें</a>
+        </body></html>"""
+    except Exception as e:
+        return f"<h2>Error: {e}</h2>"
+
+@app.route('/api/auth/login', methods=['POST'])
+def email_login():
+    try:
+        data     = request.get_json() or {}
+        email    = data.get('email', '').strip().lower()
+        password = data.get('password', '').strip()
+
+        if not email or not password:
+            return jsonify({'success': False, 'error': 'Email और Password डालें'}), 400
+
+        conn    = get_conn()
+        pw_hash = hash_password(password)
+        cur     = qexec(conn, "SELECT * FROM citizens WHERE email = %s AND password_hash = %s", (email, pw_hash))
+        row     = to_dict(cur, cur.fetchone())
+
+        if not row:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Email या Password गलत है'}), 401
+
+        if not row.get('verified'):
+            conn.close()
+            return jsonify({'success': False, 'error': 'Email verify नहीं है! Email खोलें और link click करें'}), 401
+
+        qexec(conn, "UPDATE citizens SET last_login = %s WHERE email = %s",
+              (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), email))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'name': row.get('name', ''), 'email': email})
+    except Exception as e:
+        print(f"[EMAIL LOGIN ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    try:
+        data  = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
+        if not email:
+            return jsonify({'success': False, 'error': 'Email डालें'}), 400
+
+        conn = get_conn()
+        cur  = qexec(conn, "SELECT * FROM citizens WHERE email = %s", (email,))
+        row  = to_dict(cur, cur.fetchone())
+        conn.close()
+
+        # Security: hamesha success return karo
+        if row:
+            token = secrets.token_urlsafe(32)
+            conn2 = get_conn()
+            qexec(conn2, "DELETE FROM otp_verifications WHERE mobile = %s", (email,))
+            qexec(conn2, "INSERT INTO otp_verifications (mobile, otp, expires_at) VALUES (%s, %s, %s)",
+                  (email, token, (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')))
+            conn2.commit()
+            conn2.close()
+
+            reset_url = f"{APP_URL}/reset-password.html?token={token}&email={email}"
+            send_email(email, 'GrievAI — Password Reset', f"""
+            <h2>Password Reset Request 🔑</h2>
+            <p>नीचे दिए बटन पर click करके नया password set करें:</p>
+            <a href="{reset_url}" style="display:inline-block;padding:14px 28px;background:#FF6200;color:#fff;border-radius:30px;text-decoration:none;font-weight:bold;margin:20px 0;">
+              🔑 Password Reset करें
+            </a>
+            <p style="color:#999;font-size:12px;">यह link 1 घंटे valid है।</p>
+            """)
+
+        return jsonify({'success': True, 'message': 'Reset link भेज दिया गया!'})
+    except Exception as e:
+        print(f"[FORGOT ERROR] {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
