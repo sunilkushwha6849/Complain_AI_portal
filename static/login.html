@@ -182,6 +182,10 @@ body {
 </div>
 
 <script>
+// Agar already logged in hai to index pe bhejo
+if(localStorage.getItem("grv_token")) {
+  window.location.href = "/";
+}
 function showTab(name) {
   ["login","register","forgot"].forEach(p => {
     document.getElementById(p+"Panel").classList.remove("active");
@@ -214,6 +218,7 @@ async function doLogin() {
     let data = await res.json();
     if(data.success) {
       localStorage.setItem("grv_user", JSON.stringify({name: data.name, email}));
+      localStorage.setItem("grv_token", "logged_in");
       showAlert("loginAlert","लॉगिन सफल! Redirect हो रहा है...",false);
       setTimeout(() => window.location.href="/", 1200);
     } else {
