@@ -7,38 +7,59 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --saffron: #FF6200; --saffron2: #FF8534; --green: #0A7C3E; --green2: #12A050;
-  --navy: #0B1E33; --navy2: #132A45; --gold: #F5C518; --gold2: #E8B800;
-  --white: #FAFAF7; --card: #FFFFFF; --text: #1A2B3C; --muted: #7A8FA0;
-  --border: rgba(11,30,51,0.1); --red: #C62828; --red2: #FFEBEE;
-  --purple: #6B21A5; --purple2: #F3E8FF;
+  --saffron: #FF6200;
+  --saffron2: #FF8534;
+  --green: #0A7C3E;
+  --green2: #12A050;
+  --navy: #0B1E33;
+  --navy2: #132A45;
+  --gold: #F5C518;
+  --gold2: #E8B800;
+  --white: #FAFAF7;
+  --off: #F2EEE7;
+  --card: #FFFFFF;
+  --text: #1A2B3C;
+  --muted: #7A8FA0;
+  --border: rgba(11,30,51,0.1);
+  --red: #C62828;
+  --red2: #FFEBEE;
+  --blue: #1565C0;
+  --blue2: #E3F2FD;
+  --purple: #6B21A5;
+  --purple2: #F3E8FF;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: "Noto Sans Devanagari", sans-serif;
+  font-family: 'Noto Sans Devanagari', sans-serif;
   background: linear-gradient(135deg, #0B1E33 0%, #1A3A5C 50%, #0B1E33 100%);
-  min-height: 100vh; display: flex; align-items: center;
-  justify-content: center; padding: 20px; position: relative; overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
 }
 .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: float 20s infinite ease-in-out; }
 .orb-1 { width: 350px; height: 350px; background: var(--saffron); top: -100px; right: -100px; }
 .orb-2 { width: 300px; height: 300px; background: var(--green); bottom: -80px; left: -80px; animation-delay: 5s; }
-.orb-3 { width: 250px; height: 250px; background: var(--purple); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 10s; }
+.orb-3 { width: 250px; height: 250px; background: var(--purple); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 10s; }
 @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(30px,-30px) scale(1.1);} 50%{transform:translate(-20px,20px) scale(0.9);} 75%{transform:translate(20px,30px) scale(1.05);} }
 .login-container { width: 100%; max-width: 480px; z-index: 10; animation: slideUp 0.5s ease; }
-@keyframes slideUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 .logo { text-align: center; margin-bottom: 30px; }
 .logo-icon { width: 80px; height: 80px; background: linear-gradient(135deg, var(--gold), var(--gold2)); border-radius: 25px; display: inline-flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: 0 15px 40px rgba(245,197,24,0.4); margin-bottom: 18px; animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
-.logo h1 { font-family: "Bebas Neue", sans-serif; font-size: 2.8rem; color: white; letter-spacing: 4px; }
+.logo h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; color: white; letter-spacing: 4px; }
 .logo p { color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 3px; }
-.card { background: rgba(255,255,255,0.98); border-radius: 40px; box-shadow: 0 30px 70px rgba(0,0,0,0.4); overflow: hidden; }
+.card { background: rgba(255,255,255,0.98); border-radius: 40px; box-shadow: 0 30px 70px rgba(0,0,0,0.4); overflow: hidden; transition: transform 0.3s; }
+.card:hover { transform: translateY(-5px); }
 .card-header { height: 6px; background: linear-gradient(90deg, var(--saffron) 0%, var(--gold) 50%, var(--green) 100%); }
 .tabs { display: flex; padding: 10px 25px 0; gap: 15px; background: white; }
 .tab { flex: 1; padding: 18px; text-align: center; cursor: pointer; font-weight: 800; color: var(--muted); border-bottom: 3px solid transparent; transition: all 0.3s; }
-.tab.active { color: var(--saffron); border-bottom-color: var(--saffron); }
+.tab.active { color: var(--saffron); border-bottom-color: var(--saffron); background: linear-gradient(180deg, rgba(255,98,0,0.05), transparent); }
 .panel { display: none; padding: 35px; background: white; animation: fadeScale 0.4s ease; }
-@keyframes fadeScale { from{opacity:0;transform:scale(0.98);} to{opacity:1;transform:scale(1);} }
+@keyframes fadeScale { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 .panel.active { display: block; }
 .panel h2 { font-size: 1.5rem; margin-bottom: 8px; color: var(--navy); font-weight: 800; }
 .panel-sub { color: var(--muted); font-size: 0.8rem; margin-bottom: 28px; border-left: 3px solid var(--saffron); padding-left: 12px; }
@@ -47,215 +68,311 @@ body {
 .input-group label .required { color: var(--red); }
 .input-wrapper { position: relative; }
 .input-wrapper input { width: 100%; padding: 15px 18px; border: 2px solid var(--border); border-radius: 20px; font-size: 0.95rem; font-family: inherit; transition: all 0.3s; background: var(--white); }
-.input-wrapper input:focus { outline: none; border-color: var(--saffron); box-shadow: 0 0 0 4px rgba(255,98,0,0.15); }
-.btn-primary { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--saffron), var(--saffron2)); color: white; border: none; border-radius: 50px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.3s; margin-top: 5px; }
+.input-wrapper input:focus { outline: none; border-color: var(--saffron); box-shadow: 0 0 0 4px rgba(255,98,0,0.15); transform: translateX(5px); }
+.input-wrapper button { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: linear-gradient(135deg, var(--navy), var(--navy2)); color: white; border: none; padding: 8px 18px; border-radius: 30px; cursor: pointer; font-size: 0.7rem; font-weight: 700; transition: all 0.3s; }
+.input-wrapper button:hover { background: linear-gradient(135deg, var(--saffron), var(--saffron2)); transform: translateY(-50%) scale(1.02); }
+.otp-group { background: linear-gradient(135deg, var(--purple2), #F0E6FF); border-radius: 24px; padding: 20px; margin-bottom: 20px; }
+.otp-boxes { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+.otp-box { width: 50px; height: 55px; text-align: center; font-size: 1.3rem; font-weight: 800; border: 2px solid var(--border); border-radius: 16px; font-family: 'Space Mono', monospace; transition: all 0.2s; background: white; }
+.otp-box:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(255,98,0,0.2); transform: scale(1.05); }
+.btn-primary { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--saffron), var(--saffron2)); color: white; border: none; border-radius: 50px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.3s; }
 .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,98,0,0.4); }
-.btn-secondary { width: 100%; padding: 14px; background: transparent; border: 2px solid var(--border); border-radius: 50px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: all 0.3s; font-family: inherit; }
-.btn-secondary:hover { border-color: var(--saffron); color: var(--saffron); }
+.btn-secondary { width: 100%; padding: 14px; background: transparent; border: 2px solid var(--border); border-radius: 50px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--saffron); color: var(--saffron); transform: translateY(-2px); }
 .forgot-link { text-align: right; margin-top: -10px; margin-bottom: 20px; }
 .forgot-link a { color: var(--saffron); text-decoration: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 .divider { display: flex; align-items: center; gap: 15px; margin: 25px 0; color: var(--muted); font-size: 0.7rem; }
-.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-.alert { padding: 14px 18px; border-radius: 20px; margin-bottom: 20px; display: none; font-size: 0.85rem; font-weight: 500; }
-.alert-error { background: var(--red2); color: var(--red); border-left: 5px solid var(--red); }
-.alert-success { background: #E8F5E9; color: var(--green); border-left: 5px solid var(--green); }
-.info-box { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); border-radius: 20px; padding: 18px; margin-bottom: 20px; font-size: 0.82rem; color: #1565C0; border-left: 4px solid #1565C0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+.alert { padding: 14px 18px; border-radius: 20px; margin-bottom: 20px; display: none; font-size: 0.85rem; font-weight: 500; animation: shake 0.5s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+.alert-error { background: linear-gradient(135deg, var(--red2), #FFE0E0); color: var(--red); border-left: 5px solid var(--red); }
+.alert-success { background: linear-gradient(135deg, #E8F5E9, #D0F0E0); color: var(--green); border-left: 5px solid var(--green); }
 .steps { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px; }
-.step { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; transition: all 0.3s; background: var(--border); color: var(--muted); }
+.step { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; transition: all 0.3s; }
 .step.active { background: linear-gradient(135deg, var(--saffron), var(--saffron2)); color: white; transform: scale(1.1); }
 .step.done { background: linear-gradient(135deg, var(--green), var(--green2)); color: white; }
 .step-line { width: 50px; height: 3px; background: var(--border); border-radius: 3px; }
-.step-line.done { background: var(--green); }
+.step-line.done { background: linear-gradient(90deg, var(--green), var(--green2)); }
+.resend-link { text-align: center; margin-top: 15px; font-size: 0.75rem; color: var(--muted); cursor: pointer; }
+.resend-link span { color: var(--saffron); font-weight: 700; }
+
+
+
+
+
+/* ===== USER SELECT FIX ===== */
+body, body * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+input, input[type="text"], input[type="tel"], input[type="email"],
+input[type="password"], input[type="number"], input[type="search"],
+input[type="url"], textarea, .otp-box {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+/* ===== END ===== */
+
 </style>
 </head>
 <body>
 <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+
 <div class="login-container">
-  <div class="logo">
-    <div class="logo-icon">⚖️</div>
-    <h1>GrievAI Portal</h1>
-    <p>MADHYA PRADESH GOVERNMENT</p>
-  </div>
+  <div class="logo"><div class="logo-icon">⚖️</div><h1>GrievAI Portal</h1><p>MADHYA PRADESH GOVERNMENT</p></div>
   <div class="card">
     <div class="card-header"></div>
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('login')">🔐 LOGIN</div>
-      <div class="tab" onclick="showTab('register')">✨ REGISTER</div>
-    </div>
+    <div class="tabs"><div class="tab active" onclick="showPanel('login')">🔐 LOGIN</div><div class="tab" onclick="showPanel('register')">✨ REGISTER</div></div>
 
-    <!-- LOGIN -->
+    <!-- LOGIN PANEL -->
     <div id="loginPanel" class="panel active">
       <h2>वापसी पर स्वागत है! 🙏</h2>
-      <p class="panel-sub">Email और Password से लॉगिन करें</p>
-      <div id="loginAlert" class="alert"></div>
-      <div class="input-group">
-        <label>📧 Email <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="email" id="loginEmail" placeholder="your@email.com"/></div>
-      </div>
-      <div class="input-group">
-        <label>🔒 Password <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="password" id="loginPassword" placeholder="••••••"/></div>
-      </div>
-      <div class="forgot-link"><a onclick="showTab('forgot')">🔑 Password भूल गए?</a></div>
+      <p class="panel-sub">अपने मोबाइल और पासवर्ड से लॉगिन करें</p>
+      <div id="loginAlert" class="alert" style="display:none"></div>
+      <div class="input-group"><label>📱 Mobile Number <span class="required">*</span></label><div class="input-wrapper"><input type="tel" id="loginMobile" placeholder="90XXXXXXXX"></div></div>
+      <div class="input-group"><label>🔒 Password <span class="required">*</span></label><div class="input-wrapper"><input type="password" id="loginPassword" placeholder="••••••"></div></div>
+      <div class="forgot-link"><a onclick="showPanel('forgot')">🔑 Password भूल गए?</a></div>
       <button class="btn-primary" onclick="doLogin()">🔐 LOGIN करें</button>
       <div class="divider">या</div>
-      <div style="text-align:center;font-size:0.85rem;">नए हैं? <a onclick="showTab('register')" style="color:var(--saffron);cursor:pointer;font-weight:800">✨ Register करें</a></div>
+      <div style="text-align:center; font-size:0.85rem;">नए हैं? <a onclick="showPanel('register')" style="color:var(--saffron);cursor:pointer;font-weight:800">✨ Register करें</a></div>
     </div>
 
-    <!-- REGISTER -->
+    <!-- REGISTER PANEL -->
     <div id="registerPanel" class="panel">
       <h2>नया अकाउंट बनाएं ✨</h2>
-      <p class="panel-sub">Email से Register करें — OTP की जरूरत नहीं!</p>
-      <div id="regAlert" class="alert"></div>
-      <div class="info-box">
-        📧 Register करने पर आपकी Email पर <b>Verification Link</b> आएगा।<br/>
-        Link click करें → Account activate हो जाएगा!
-      </div>
-      <div class="input-group">
-        <label>👤 पूरा नाम <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="text" id="regName" placeholder="जैसे: सुनील कुशवाहा"/></div>
-      </div>
-      <div class="input-group">
-        <label>📧 Email <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="email" id="regEmail" placeholder="your@email.com"/></div>
-      </div>
-      <div class="input-group">
-        <label>🔒 Password <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="password" id="regPassword" placeholder="कम से कम 6 अक्षर"/></div>
-      </div>
-      <div class="input-group">
-        <label>🔒 Confirm Password <span class="required">*</span></label>
-        <div class="input-wrapper"><input type="password" id="regPassword2" placeholder="पुनः पासवर्ड डालें"/></div>
-      </div>
+      <p class="panel-sub">एक बार रजिस्टर करें, हमेशा लॉगिन करें</p>
+      <div id="regAlert" class="alert" style="display:none"></div>
+      <div class="input-group"><label>👤 पूरा नाम <span class="required">*</span></label><div class="input-wrapper"><input type="text" id="regName" placeholder="जैसे: सुनील कुशवाहा"></div></div>
+      <div class="input-group"><label>📱 Mobile Number <span class="required">*</span></label><div class="input-wrapper"><input type="tel" id="regMobile" placeholder="90XXXXXXXX"><button id="sendOtpBtn" onclick="sendRegisterOtp()">📨 OTP भेजें</button></div></div>
+      <div id="regOtpSection" style="display:none"><div class="otp-group"><div class="otp-boxes"><input class="otp-box" maxlength="1" id="ro0" oninput="otpMove('ro',0)"><input class="otp-box" maxlength="1" id="ro1" oninput="otpMove('ro',1)"><input class="otp-box" maxlength="1" id="ro2" oninput="otpMove('ro',2)"><input class="otp-box" maxlength="1" id="ro3" oninput="otpMove('ro',3)"><input class="otp-box" maxlength="1" id="ro4" oninput="otpMove('ro',4)"><input class="otp-box" maxlength="1" id="ro5" oninput="otpMove('ro',5)"></div><div class="resend-link">OTP नहीं आया? <span onclick="sendRegisterOtp()">पुनः भेजें 🔄</span></div></div></div>
+      <div class="input-group"><label>📧 Email (optional)</label><div class="input-wrapper"><input type="email" id="regEmail" placeholder="your@email.com"></div></div>
+      <div class="input-group"><label>🔒 Password <span class="required">*</span></label><div class="input-wrapper"><input type="password" id="regPassword" placeholder="कम से कम 6 अक्षर"></div></div>
+      <div class="input-group"><label>🔒 Confirm Password <span class="required">*</span></label><div class="input-wrapper"><input type="password" id="regPassword2" placeholder="पुनः पासवर्ड डालें"></div></div>
       <button class="btn-primary" onclick="doRegister()">✨ REGISTER करें</button>
       <div class="divider">या</div>
-      <div style="text-align:center;font-size:0.85rem;">पहले से Account है? <a onclick="showTab('login')" style="color:var(--saffron);cursor:pointer;font-weight:800">🔐 Login करें</a></div>
+      <div style="text-align:center;font-size:0.85rem;">पहले से Account है? <a onclick="showPanel('login')" style="color:var(--saffron);cursor:pointer;font-weight:800">🔐 Login करें</a></div>
     </div>
 
-    <!-- FORGOT PASSWORD -->
+    <!-- FORGOT PASSWORD PANEL - FULLY FIXED with RESEND -->
     <div id="forgotPanel" class="panel">
       <h2>पासवर्ड रीसेट 🔄</h2>
-      <p class="panel-sub">Email पर Reset Link भेजा जाएगा</p>
-      <div id="forgotAlert" class="alert"></div>
-      <div class="steps">
-        <div class="step active" id="fstep1">1</div>
-        <div class="step-line" id="fline1"></div>
-        <div class="step" id="fstep2">2</div>
-      </div>
+      <p class="panel-sub">OTP से नया पासवर्ड बनाएं</p>
+      <div id="forgotAlert" class="alert" style="display:none"></div>
+      <div class="steps"><div class="step active" id="step1dot">1</div><div class="step-line" id="line1"></div><div class="step" id="step2dot">2</div><div class="step-line" id="line2"></div><div class="step" id="step3dot">3</div></div>
+      
+      <!-- STEP 1: Mobile -->
       <div id="forgotStep1">
-        <div class="input-group">
-          <label>📧 Registered Email</label>
-          <div class="input-wrapper"><input type="email" id="forgotEmail" placeholder="your@email.com"/></div>
-        </div>
-        <button class="btn-primary" onclick="sendResetLink()">📨 Reset Link भेजें</button>
+        <div class="input-group"><label>📱 Mobile Number</label><div class="input-wrapper"><input type="tel" id="forgotMobile" placeholder="90XXXXXXXX"><button onclick="sendForgotOtp()">📨 OTP भेजें</button></div></div>
       </div>
+      
+      <!-- STEP 2: OTP with RESEND option -->
       <div id="forgotStep2" style="display:none">
-        <div class="info-box">
-          ✅ Reset link आपकी email पर भेज दिया गया है!<br/>
-          Email खोलें → Link click करें → नया Password डालें
+        <div class="otp-group">
+          <div class="otp-boxes">
+            <input class="otp-box" maxlength="1" id="fo0" oninput="otpMove('fo',0)"><input class="otp-box" maxlength="1" id="fo1" oninput="otpMove('fo',1)">
+            <input class="otp-box" maxlength="1" id="fo2" oninput="otpMove('fo',2)"><input class="otp-box" maxlength="1" id="fo3" oninput="otpMove('fo',3)">
+            <input class="otp-box" maxlength="1" id="fo4" oninput="otpMove('fo',4)"><input class="otp-box" maxlength="1" id="fo5" oninput="otpMove('fo',5)">
+          </div>
+          <div class="resend-link">OTP नहीं आया? <span onclick="resendForgotOtp()">पुनः भेजें 🔄</span></div>
+          <button class="btn-primary" onclick="verifyForgotOtp()" style="margin-top:15px;">✅ VERIFY OTP</button>
+          <button class="btn-secondary" onclick="goToForgotStep(1)">← वापस</button>
         </div>
-        <button class="btn-secondary" onclick="showTab('login')">← Login पर वापस जाएं</button>
       </div>
+      
+      <!-- STEP 3: New Password -->
+      <div id="forgotStep3" style="display:none">
+        <div class="input-group"><label>🔒 नया पासवर्ड <span class="required">*</span></label><div class="input-wrapper"><input type="password" id="newPw" placeholder="नया पासवर्ड (6+ अक्षर)"></div></div>
+        <div class="input-group"><label>🔒 पासवर्ड कन्फर्म <span class="required">*</span></label><div class="input-wrapper"><input type="password" id="newPw2" placeholder="पुनः डालें"></div></div>
+        <button class="btn-primary" onclick="doResetPassword()">🔄 RESET करें</button>
+        <button class="btn-secondary" onclick="goToForgotStep(2)">← वापस</button>
+      </div>
+      
       <div class="divider"></div>
-      <div style="text-align:center"><a onclick="showTab('login')" style="color:var(--saffron);cursor:pointer;font-weight:700">← Login पर वापस जाएं</a></div>
+      <div style="text-align:center"><a onclick="showPanel('login')" style="color:var(--saffron);cursor:pointer;font-weight:700">← Login पर वापस जाएं</a></div>
     </div>
-
   </div>
 </div>
 
 <script>
-function showTab(name) {
-  ['login','register','forgot'].forEach(p => {
-    document.getElementById(p+'Panel').classList.remove('active');
-  });
+let forgotMobileVar = '', forgotOtpVerified = false;
+
+function showPanel(panelName) {
+  document.getElementById('loginPanel').classList.remove('active');
+  document.getElementById('registerPanel').classList.remove('active');
+  document.getElementById('forgotPanel').classList.remove('active');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(name+'Panel').classList.add('active');
-  if(name==='login') document.querySelector('.tab:first-child').classList.add('active');
-  else if(name==='register') document.querySelector('.tab:last-child').classList.add('active');
+  document.getElementById(panelName + 'Panel').classList.add('active');
+  if(panelName === 'login') document.querySelector('.tab:first-child').classList.add('active');
+  else if(panelName === 'register') document.querySelector('.tab:last-child').classList.add('active');
+  else document.querySelector('.tab:first-child').classList.add('active');
+  if(panelName === 'forgot') { goToForgotStep(1); forgotOtpVerified = false; document.getElementById('forgotMobile').value = ''; document.getElementById('forgotAlert').style.display = 'none'; for(let i=0;i<6;i++) { let otpBox = document.getElementById('fo'+i); if(otpBox) otpBox.value = ''; } }
 }
 
-function showAlert(id, msg, isError) {
-  let el = document.getElementById(id);
-  el.innerHTML = (isError ? '❌ ' : '✅ ') + msg;
+function showAlert(alertId, message, isError) {
+  let el = document.getElementById(alertId);
+  el.innerHTML = (isError ? '❌ ' : '✅ ') + message;
   el.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
   el.style.display = 'block';
-  if(!isError) setTimeout(() => el.style.display='none', 5000);
+  setTimeout(() => el.style.display = 'none', 5000);
 }
 
-// LOGIN
-async function doLogin() {
-  let email = document.getElementById('loginEmail').value.trim();
-  let pw = document.getElementById('loginPassword').value;
-  if(!email) { showAlert('loginAlert', 'Email डालें', true); return; }
-  if(!pw) { showAlert('loginAlert', 'Password डालें', true); return; }
+function otpMove(prefix, i) { let val = document.getElementById(prefix + i).value; if(val && i < 5) document.getElementById(prefix + (i+1)).focus(); }
+function getOtp(prefix) { let otp = ''; for(let i = 0; i < 6; i++) otp += document.getElementById(prefix + i)?.value || ''; return otp; }
+
+function goToForgotStep(step) {
+  document.getElementById('forgotStep1').style.display = step === 1 ? 'block' : 'none';
+  document.getElementById('forgotStep2').style.display = step === 2 ? 'block' : 'none';
+  document.getElementById('forgotStep3').style.display = step === 3 ? 'block' : 'none';
+  for(let i = 1; i <= 3; i++) {
+    let dot = document.getElementById('step' + i + 'dot');
+    let line = document.getElementById('line' + (i-1));
+    if(i < step) { dot.classList.remove('active'); dot.classList.add('done'); if(line) line.classList.add('done'); }
+    else if(i === step) { dot.classList.add('active'); dot.classList.remove('done'); if(line) line.classList.remove('done'); }
+    else { dot.classList.remove('active', 'done'); if(line) line.classList.remove('done'); }
+  }
+}
+
+// ========== REGISTER ==========
+async function sendRegisterOtp() {
+  let mob = document.getElementById('regMobile').value.trim();
+  if(!mob || mob.length < 10) { showAlert('regAlert', 'सही मोबाइल नंबर डालें', true); return; }
+  let btn = document.getElementById('sendOtpBtn');
+  btn.disabled = true; btn.textContent = '⏳...';
   try {
-    let res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email, password: pw})
-    });
+    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: mob }) });
     let data = await res.json();
-    if(data.success) {
-      localStorage.setItem('grv_user', JSON.stringify({name: data.name, email: email}));
-      showAlert('loginAlert', 'लॉगिन सफल! Redirect हो रहा है...', false);
-      setTimeout(() => window.location.href = '/', 1200);
-    } else {
-      showAlert('loginAlert', data.error || 'Login failed', true);
-    }
-  } catch(e) { showAlert('loginAlert', 'Server error', true); }
+    if(data.success) { document.getElementById('regOtpSection').style.display = 'block'; showAlert('regAlert', data.test_mode ? '✅ OTP terminal में print हुआ! Check your terminal window' : data.message, false); }
+    else { showAlert('regAlert', data.error || 'OTP भेजने में समस्या', true); }
+  } catch(e) { showAlert('regAlert', 'सर्वर कनेक्ट नहीं हो पा रहा', true); }
+  btn.disabled = false; btn.textContent = '📨 OTP भेजें';
 }
 
-// REGISTER
 async function doRegister() {
   let name = document.getElementById('regName').value.trim();
-  let email = document.getElementById('regEmail').value.trim();
+  let mob = document.getElementById('regMobile').value.trim();
   let pw = document.getElementById('regPassword').value;
   let pw2 = document.getElementById('regPassword2').value;
+  let otp = getOtp('ro');
+  let email = document.getElementById('regEmail').value.trim();
   if(!name) { showAlert('regAlert', 'नाम डालें', true); return; }
-  if(!email) { showAlert('regAlert', 'Email डालें', true); return; }
-  if(!pw || pw.length < 6) { showAlert('regAlert', 'Password 6+ अक्षर होना चाहिए', true); return; }
-  if(pw !== pw2) { showAlert('regAlert', 'Password match नहीं हुआ', true); return; }
+  if(!mob || mob.length < 10) { showAlert('regAlert', 'मोबाइल डालें', true); return; }
+  if(!pw || pw.length < 6) { showAlert('regAlert', 'पासवर्ड 6+ अक्षर', true); return; }
+  if(pw !== pw2) { showAlert('regAlert', 'पासवर्ड मैच नहीं', true); return; }
+  if(!otp || otp.length !== 6) { showAlert('regAlert', 'OTP डालें', true); return; }
   try {
-    let res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({name, email, password: pw})
-    });
+    let res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, mobile: mob, password: pw, otp, email }) });
     let data = await res.json();
-    if(data.success) {
-      showAlert('regAlert', '✅ ' + (data.message || 'Email verify करें!'), false);
-      document.getElementById('regName').value = '';
-      document.getElementById('regEmail').value = '';
-      document.getElementById('regPassword').value = '';
-      document.getElementById('regPassword2').value = '';
-    } else {
-      showAlert('regAlert', data.error || 'Registration failed', true);
-    }
-  } catch(e) { showAlert('regAlert', 'Server error', true); }
+    if(data.success) { localStorage.setItem('grv_token', data.token); localStorage.setItem('grv_user', JSON.stringify(data.user)); showAlert('regAlert', '✅ रजिस्टर सफल! रीडायरेक्ट...', false); setTimeout(() => { window.location.href = '/index.html'; }, 1500); }
+    else { showAlert('regAlert', data.error || 'रजिस्टर फेल', true); }
+  } catch(e) { showAlert('regAlert', 'सर्वर एरर', true); }
 }
 
-// FORGOT PASSWORD
-async function sendResetLink() {
-  let email = document.getElementById('forgotEmail').value.trim();
-  if(!email) { showAlert('forgotAlert', 'Email डालें', true); return; }
+// ========== LOGIN ==========
+async function doLogin() {
+  let mob = document.getElementById('loginMobile').value.trim();
+  let pw = document.getElementById('loginPassword').value;
+  if(!mob || mob.length < 10) { showAlert('loginAlert', 'सही मोबाइल नंबर डालें', true); return; }
+  if(!pw) { showAlert('loginAlert', 'पासवर्ड डालें', true); return; }
   try {
-    let res = await fetch('/api/auth/forgot-password', {
+    let res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: mob, password: pw }) });
+    let data = await res.json();
+    if(data.success) { localStorage.setItem('grv_token', data.token); localStorage.setItem('grv_user', JSON.stringify(data.user)); showAlert('loginAlert', '✅ लॉगिन सफल!', false); setTimeout(() => { window.location.href = '/index.html'; }, 1000); }
+    else { showAlert('loginAlert', data.error || 'लॉगिन फेल', true); }
+  } catch(e) { showAlert('loginAlert', 'सर्वर कनेक्ट नहीं हो पा रहा', true); }
+}
+
+// ========== FORGOT PASSWORD (FULLY FIXED) ==========
+async function sendForgotOtp() {
+  let mob = document.getElementById('forgotMobile').value.trim();
+  if(!mob || mob.length < 10) { showAlert('forgotAlert', 'सही मोबाइल डालें', true); return; }
+  forgotMobileVar = mob;
+  let btn = event.target;
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: mob }) });
+    let data = await res.json();
+    if(data.success) { 
+      goToForgotStep(2); 
+      forgotOtpVerified = false; 
+      showAlert('forgotAlert', '✅ OTP भेजा गया! Terminal window mein dekhein', false);
+      // Clear previous OTP boxes
+      for(let i=0;i<6;i++) { let box = document.getElementById('fo'+i); if(box) box.value = ''; }
+      document.getElementById('fo0').focus();
+    } else { 
+      showAlert('forgotAlert', data.error || 'OTP error', true); 
+    }
+  } catch(e) { showAlert('forgotAlert', 'सर्वर एरर: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = '📨 OTP भेजें';
+}
+
+// Resend OTP for forgot password
+async function resendForgotOtp() {
+  if(!forgotMobileVar) {
+    showAlert('forgotAlert', 'पहले मोबाइल नंबर डालें', true);
+    goToForgotStep(1);
+    return;
+  }
+  let btn = event.target;
+  let originalText = btn.innerText;
+  btn.innerText = '⏳ भेज रहा...';
+  try {
+    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: forgotMobileVar }) });
+    let data = await res.json();
+    if(data.success) { 
+      showAlert('forgotAlert', '✅ OTP पुनः भेजा गया! Terminal mein dekhein', false);
+      for(let i=0;i<6;i++) { let box = document.getElementById('fo'+i); if(box) box.value = ''; }
+      document.getElementById('fo0').focus();
+    } else { 
+      showAlert('forgotAlert', data.error || 'OTP error', true); 
+    }
+  } catch(e) { showAlert('forgotAlert', 'सर्वर एरर', true); }
+  btn.innerText = originalText;
+}
+
+async function verifyForgotOtp() {
+  let otp = getOtp('fo');
+  if(otp.length !== 6) { showAlert('forgotAlert', '6 अंक OTP डालें', true); return; }
+  try {
+    let res = await fetch('/api/otp/verify', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobile: forgotMobileVar, otp: otp })
     });
     let data = await res.json();
-    if(data.success) {
-      document.getElementById('forgotStep1').style.display = 'none';
-      document.getElementById('forgotStep2').style.display = 'block';
-      document.getElementById('fstep1').classList.remove('active');
-      document.getElementById('fstep1').classList.add('done');
-      document.getElementById('fline1').classList.add('done');
-      document.getElementById('fstep2').classList.add('active');
-    } else {
-      showAlert('forgotAlert', data.error || 'Error', true);
+    if(data.success) { 
+      forgotOtpVerified = true;
+      goToForgotStep(3); 
+      showAlert('forgotAlert', '✅ OTP सत्यापित! अब नया पासवर्ड डालें', false);
+    } else { 
+      showAlert('forgotAlert', data.error || 'OTP गलत या एक्सपायर', true); 
     }
-  } catch(e) { showAlert('forgotAlert', 'Server error', true); }
+  } catch(e) { showAlert('forgotAlert', 'सर्वर एरर', true); }
+}
+
+async function doResetPassword() {
+  let pw = document.getElementById('newPw').value;
+  let pw2 = document.getElementById('newPw2').value;
+  if(!pw || pw.length < 6) { showAlert('forgotAlert', 'पासवर्ड 6+ अक्षर', true); return; }
+  if(pw !== pw2) { showAlert('forgotAlert', 'पासवर्ड मैच नहीं', true); return; }
+  if(!forgotOtpVerified) { showAlert('forgotAlert', 'पहले OTP सत्यापित करें', true); return; }
+  try {
+    let res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobile: forgotMobileVar, new_password: pw })
+    });
+    let data = await res.json();
+    if(data.success) { 
+      showAlert('forgotAlert', '✅ पासवर्ड रीसेट! अब लॉगिन करें', false); 
+      setTimeout(() => { showPanel('login'); }, 1500);
+    } else { 
+      showAlert('forgotAlert', data.error || 'रीसेट फेल', true); 
+    }
+  } catch(e) { showAlert('forgotAlert', 'सर्वर एरर', true); }
 }
 </script>
 </body>
