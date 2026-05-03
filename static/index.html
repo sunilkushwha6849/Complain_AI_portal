@@ -34,7 +34,7 @@
   --orange: #E65100;
   --indigo: #3949AB;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; cursor: default; }
 body {
   font-family: 'Noto Sans Devanagari', sans-serif;
   background: linear-gradient(135deg, #0B1E33 0%, #1A3A5C 50%, #0B1E33 100%);
@@ -1022,6 +1022,33 @@ footer {
     height: 2px !important;
     opacity: 0.4 !important;
   }
+}
+
+/* Cursor Fix */
+* { cursor: default; }
+button, a, [onclick], .tab, .nav-item, .btn-primary, .btn-secondary,
+.card, .complaint-card, .dept-card, .stat-card, select, input[type="file"],
+.loc-btn, .mode-btn, .otp-box, label[for], .clickable, .resend-link span,
+.forgot-link a, .nav-tab { 
+  cursor: pointer !important; 
+}
+input[type="text"], input[type="tel"], input[type="email"], 
+input[type="password"], input[type="number"], textarea, select {
+  cursor: text !important;
+}
+input[type="file"] { cursor: pointer !important; }
+
+/* Text Select Fix - Sirf input/textarea mein select hoga */
+* { 
+  -webkit-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
+  user-select: none; 
+}
+input, textarea, [contenteditable="true"] { 
+  -webkit-user-select: text !important; 
+  -moz-user-select: text !important; 
+  user-select: text !important; 
 }
 </style>
 </head>
