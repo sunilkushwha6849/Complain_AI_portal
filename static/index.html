@@ -1291,7 +1291,17 @@ for(let i = 0; i < particleCount; i++) {
 
 <script>
 // Check login
-if(!localStorage.getItem('grv_token')){ window.location.href='/login.html'; }
+// Auth check
+if(!localStorage.getItem('grv_token')) { 
+  window.location.href='/login.html'; 
+} else {
+  // User ka naam show karo
+  try {
+    let user = JSON.parse(localStorage.getItem('grv_user') || '{}');
+    let nameEl = document.getElementById('user-name');
+    if(nameEl && user.name) nameEl.innerText = user.name;
+  } catch(e) {}
+}
 
 // Variables
 let currentMode = 'voice';
