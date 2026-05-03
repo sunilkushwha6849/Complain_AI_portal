@@ -1038,18 +1038,27 @@ input[type="password"], input[type="number"], textarea, select {
 }
 input[type="file"] { cursor: pointer !important; }
 
-/* Text Select Fix - Sirf input/textarea mein select hoga */
-* { 
-  -webkit-user-select: none; 
-  -moz-user-select: none; 
-  -ms-user-select: none; 
-  user-select: none; 
+
+
+
+
+/* ===== USER SELECT FIX ===== */
+body, body * {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
 }
-input, textarea, [contenteditable="true"] { 
-  -webkit-user-select: text !important; 
-  -moz-user-select: text !important; 
-  user-select: text !important; 
+input, input[type="text"], input[type="tel"], input[type="email"],
+input[type="password"], input[type="number"], input[type="search"],
+input[type="url"], textarea, .otp-box {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
 }
+/* ===== END ===== */
+
 </style>
 </head>
 <body>
