@@ -1,6 +1,7 @@
 """
 GrievAI Portal v3.3 — Main Flask Server
 Supports SQLite (local) + PostgreSQL (Railway)
+OTP VERIFY FIXED — 2Factor working
 """
 import os
 import uuid
@@ -44,30 +45,33 @@ def send_email(to, subject, html):
         print(f"[EMAIL ERROR] {e}")
         return False
 
-# ─── Twilio SMS ───────────────────────────────────────────────────────────────
+# ─── 2Factor OTP ─────────────────────────────────────────────────────────────
 TWILIO_SID   = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE = os.environ.get('TWILIO_PHONE_NUMBER', '')
 
 def send_sms(to, body):
+    # Remove +91 if present
+    mobile = to.replace('+91', '').strip()
+    
+    # 2Factor.in API Key
     API_KEY = os.environ.get('FAST2SMS_API_KEY', '')
-
-    # 2Factor.in use karo agar key hai
+    
     if API_KEY:
         try:
             import requests as req
             otp_code = ''.join(filter(str.isdigit, body))[:6]
-            url = f"https://2factor.in/API/V1/{API_KEY}/SMS/{to}/{otp_code}/OTP1"
+            url = f"https://2factor.in/API/V1/{API_KEY}/SMS/{mobile}/{otp_code}/OTP1"
             r = req.get(url, timeout=10)
             res = r.json()
-            print(f"[2FACTOR] {res}")
+            print(f"[2FACTOR] Response: {res}")
             return res.get('Status') == 'Success'
         except Exception as e:
             print(f"[2FACTOR ERROR] {e}")
             return False
-
-    # Test mode
-    print(f"[OTP TEST] To: {to} | {body}")
+    
+    # Fallback: test mode
+    print(f"[OTP TEST] To: {mobile} | {body}")
     return True
 
 def gen_otp():
@@ -75,6 +79,22 @@ def gen_otp():
 
 def gen_complaint_id():
     return 'GRV' + ''.join(random.choices(string.digits, k=8))
+
+# ─── Safe datetime parser ─────────────────────────────────────────────────────
+def parse_datetime_safe(dt_str):
+    """Safely parse datetime string from database - handles both formats"""
+    if dt_str is None:
+        return datetime.now()
+    try:
+        if isinstance(dt_str, datetime):
+            return dt_str
+        dt_str = str(dt_str)
+        if 'T' in dt_str:
+            return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+        return datetime.strptime(dt_str[:19], '%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        print(f"[PARSE ERROR] {dt_str} - {e}")
+        return datetime.now()
 
 # ─── Frontend Routes ──────────────────────────────────────────────────────────
 @app.route('/')
@@ -107,7 +127,7 @@ def send_otp():
 
         send_sms(f'+91{mobile}', f'GrievAI OTP: {otp}. Valid 10 min. Do not share.')
         print(f"[OTP] {mobile} → {otp}")
-        return jsonify({'success': True, 'message': 'OTP sent'})
+        return jsonify({'success': True, 'message': 'OTP sent', 'test_mode': not bool(os.environ.get('FAST2SMS_API_KEY'))})
     except Exception as e:
         print(f"[OTP ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -120,30 +140,49 @@ def verify_otp():
         mobile = data.get('mobile', '').strip()
         otp    = data.get('otp', '').strip()
 
+        print(f"[VERIFY] Mobile: {mobile}, OTP: {otp}")
+
         conn = get_conn()
         cur  = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s", (mobile, otp))
         row  = to_dict(cur, cur.fetchone())
 
         if not row:
             conn.close()
+            print(f"[VERIFY] No OTP record found for {mobile}")
             return jsonify({'success': False, 'error': 'Invalid OTP'}), 400
 
-        expires = datetime.strptime(str(row['expires_at'])[:19], '%Y-%m-%d %H:%M:%S')
+        # FIXED: Safely parse expires_at
+        expires_str = row['expires_at']
+        print(f"[VERIFY] Expires at: {expires_str}")
+        
+        expires = parse_datetime_safe(expires_str)
+
         if datetime.now() > expires:
             conn.close()
+            print(f"[VERIFY] OTP expired for {mobile}")
             return jsonify({'success': False, 'error': 'OTP expired'}), 400
 
-        qexec(conn, "UPDATE otp_verifications SET verified = %s WHERE mobile = %s AND otp = %s",
-              (1 if not USE_POSTGRES else True, mobile, otp))
-        qexec(conn, """INSERT INTO citizens (mobile, verified) VALUES (%s, %s)
-                       ON CONFLICT (mobile) DO UPDATE SET verified = %s, last_login = %s""",
-              (mobile, 1 if not USE_POSTGRES else True,
-               1 if not USE_POSTGRES else True, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        # Mark as verified
+        if USE_POSTGRES:
+            qexec(conn, "UPDATE otp_verifications SET verified = TRUE WHERE mobile = %s AND otp = %s", (mobile, otp))
+            qexec(conn, """INSERT INTO citizens (mobile, verified) VALUES (%s, TRUE)
+                           ON CONFLICT (mobile) DO UPDATE SET verified = TRUE, last_login = %s""",
+                  (mobile, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        else:
+            qexec(conn, "UPDATE otp_verifications SET verified = 1 WHERE mobile = %s AND otp = %s", (mobile, otp))
+            qexec(conn, """INSERT OR REPLACE INTO citizens (mobile, verified, last_login) 
+                           VALUES (?, ?, ?)""",
+                  (mobile, 1, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        
         conn.commit()
         conn.close()
+        
+        print(f"[VERIFY] ✅ OTP verified for {mobile}")
         return jsonify({'success': True, 'message': 'OTP verified'})
     except Exception as e:
         print(f"[VERIFY OTP ERROR] {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # ─── Complaints ───────────────────────────────────────────────────────────────
@@ -151,7 +190,6 @@ def verify_otp():
 def submit_complaint():
     try:
         data = request.get_json() or {}
-        # Frontend citizen_name/raw_text bhi support karo
         if 'citizen_name' in data and 'name' not in data:
             data['name'] = data['citizen_name']
         if 'raw_text' in data and 'complaint' not in data:
@@ -195,7 +233,6 @@ def submit_complaint():
         conn.commit()
         conn.close()
 
-        # Email to user
         if data.get('email'):
             track_url = f"{APP_URL}/?track={c_id}"
             send_email(data['email'], f'शिकायत #{c_id} दर्ज हो गई — GrievAI', f"""
@@ -208,7 +245,6 @@ def submit_complaint():
             <a href="{track_url}" style="display:inline-block;padding:12px 24px;background:#4CAF50;color:#fff;border-radius:8px;text-decoration:none;">🔍 Track Complaint</a>
             """)
 
-        # Alert to officers
         priority_emoji = {'critical': '🚨', 'high': '⚠️', 'medium': '📋', 'low': 'ℹ️'}
         for officer_email in ALERT_EMAILS:
             send_email(officer_email,
@@ -281,7 +317,7 @@ def get_analytics():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# ─── FEEDBACK — FIXED ─────────────────────────────────────────────────────────
+# ─── FEEDBACK ─────────────────────────────────────────────────────────────────
 @app.route('/api/feedback', methods=['POST'])
 def submit_feedback():
     try:
@@ -290,7 +326,6 @@ def submit_feedback():
         message = data.get('message', '').strip()
         name    = data.get('name', 'Anonymous').strip() or 'Anonymous'
 
-        # Validation
         if rating is None:
             return jsonify({'success': False, 'error': 'Rating is required'}), 400
         try:
@@ -303,8 +338,7 @@ def submit_feedback():
             return jsonify({'success': False, 'error': 'Message is required'}), 400
 
         conn = get_conn()
-        qexec(conn,
-              "INSERT INTO feedback (rating, message, user_name) VALUES (%s, %s, %s)",
+        qexec(conn, "INSERT INTO feedback (rating, message, user_name) VALUES (%s, %s, %s)",
               (rating, message, name))
         conn.commit()
         conn.close()
@@ -338,10 +372,9 @@ def get_feedback():
         print(f"[FEEDBACK GET ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# ─── Photo Analyze (optional) ─────────────────────────────────────────────────
+# ─── Photo Analyze ────────────────────────────────────────────────────────────
 @app.route('/api/analyze-photo', methods=['POST'])
 def analyze_photo():
-    # Placeholder — returns mock AI result
     return jsonify({
         'success': True,
         'description': 'Photo received. Manual review required.',
@@ -355,25 +388,12 @@ def health():
     return jsonify({'status': 'ok', 'version': '3.3',
                     'db': 'PostgreSQL' if USE_POSTGRES else 'SQLite'})
 
-# ─── Main ──────────────────────────────────────────────────────────────────────
-if __name__ == '__main__':
-    print("\n" + "="*50)
-    print("  GrievAI Portal v3.3")
-    print(f"  DB: {'PostgreSQL' if USE_POSTGRES else 'SQLite'}")
-    print("="*50)
-    init_db()
-    port = int(os.environ.get('PORT', 8000))
-    print(f"\n✅ Server: http://localhost:{port}\n")
-    app.run(host='0.0.0.0', port=port, debug=False)
-
-# ─── Auth Routes (login.html ke liye) ────────────────────────────────────────
+# ─── Auth Routes ─────────────────────────────────────────────────────────────
 import hashlib
 import secrets
 
 def hash_password(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
-
-# ─── Email Auth Routes ────────────────────────────────────────────────────────
 
 @app.route('/api/auth/register', methods=['POST'])
 def email_register():
@@ -434,8 +454,10 @@ def verify_email():
             conn.close()
             return "<h2>❌ Invalid या Expired Link</h2><p><a href='/login.html'>Login करें</a></p>"
 
-        qexec(conn, "UPDATE citizens SET verified = %s WHERE email = %s",
-              (True if USE_POSTGRES else 1, email))
+        if USE_POSTGRES:
+            qexec(conn, "UPDATE citizens SET verified = TRUE WHERE email = %s", (email,))
+        else:
+            qexec(conn, "UPDATE citizens SET verified = 1 WHERE email = %s", (email,))
         qexec(conn, "DELETE FROM otp_verifications WHERE mobile = %s AND otp = %s", (email, token))
         conn.commit()
         conn.close()
@@ -492,7 +514,6 @@ def forgot_password():
         row  = to_dict(cur, cur.fetchone())
         conn.close()
 
-        # Security: hamesha success return karo
         if row:
             token = secrets.token_urlsafe(32)
             conn2 = get_conn()
@@ -522,8 +543,7 @@ import threading
 import time
 
 def keep_alive():
-    """Har 10 min mein khud ko ping karta hai"""
-    time.sleep(60)  # Start hone ke 1 min baad shuru ho
+    time.sleep(60)
     while True:
         try:
             import requests as req
@@ -531,8 +551,18 @@ def keep_alive():
             print("[KEEP-ALIVE] Ping sent ✅")
         except Exception as e:
             print(f"[KEEP-ALIVE] {e}")
-        time.sleep(600)  # Har 10 min
+        time.sleep(600)
 
-# Background thread mein chalao
 t = threading.Thread(target=keep_alive, daemon=True)
 t.start()
+
+# ─── Main ──────────────────────────────────────────────────────────────────────
+if __name__ == '__main__':
+    print("\n" + "="*50)
+    print("  GrievAI Portal v3.3")
+    print(f"  DB: {'PostgreSQL' if USE_POSTGRES else 'SQLite'}")
+    print("="*50)
+    init_db()
+    port = int(os.environ.get('PORT', 8000))
+    print(f"\n✅ Server: http://localhost:{port}\n")
+    app.run(host='0.0.0.0', port=port, debug=False)
