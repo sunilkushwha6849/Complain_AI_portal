@@ -516,3 +516,23 @@ def forgot_password():
     except Exception as e:
         print(f"[FORGOT ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ─── Self Ping — Server Jaaga Rahe ───────────────────────────────────────────
+import threading
+import time
+
+def keep_alive():
+    """Har 10 min mein khud ko ping karta hai"""
+    time.sleep(60)  # Start hone ke 1 min baad shuru ho
+    while True:
+        try:
+            import requests as req
+            req.get(f"{APP_URL}/health", timeout=10)
+            print("[KEEP-ALIVE] Ping sent ✅")
+        except Exception as e:
+            print(f"[KEEP-ALIVE] {e}")
+        time.sleep(600)  # Har 10 min
+
+# Background thread mein chalao
+t = threading.Thread(target=keep_alive, daemon=True)
+t.start()
