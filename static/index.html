@@ -507,6 +507,77 @@ main {
   border-color: var(--purple);
   box-shadow: 0 2px 8px rgba(107,33,165,0.1);
 }
+/* OTP Modal */
+.otp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.otp-modal {
+  background: white;
+  border-radius: 32px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: modalFlyIn 0.4s ease;
+}
+.otp-modal h3 {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  color: var(--navy);
+}
+.otp-modal p {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.otp-boxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.otp-box {
+  width: 50px;
+  height: 55px;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Space Mono', monospace;
+  transition: all 0.2s;
+  background: white;
+}
+.otp-box:focus {
+  border-color: var(--saffron);
+  box-shadow: 0 0 0 3px rgba(255,98,0,0.2);
+  outline: none;
+}
+.otp-resend {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.otp-resend span {
+  color: var(--saffron);
+  cursor: pointer;
+  font-weight: 700;
+}
+.otp-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
 /* Rating Stars */
 .rating-stars {
   display: flex;
@@ -1017,51 +1088,28 @@ footer {
   .header-inner { flex-direction: column; gap: 10px; }
   .nav { flex-wrap: wrap; justify-content: center; }
   .nav-item { padding: 10px 16px; font-size: 0.8rem; }
+  .otp-box { width: 40px; height: 45px; font-size: 1rem; }
 }
-
 @media (max-width: 768px) {
-  .particle { 
-    width: 2px !important; 
-    height: 2px !important;
-    opacity: 0.4 !important;
-  }
+  .particle { width: 2px !important; height: 2px !important; opacity: 0.4 !important; }
 }
-
 /* Cursor Fix */
 * { cursor: default; }
 button, a, [onclick], .tab, .nav-item, .btn-primary, .btn-secondary,
 .card, .complaint-card, .dept-card, .stat-card, select, input[type="file"],
 .loc-btn, .mode-btn, .otp-box, label[for], .clickable, .resend-link span,
-.forgot-link a, .nav-tab { 
-  cursor: pointer !important; 
-}
+.forgot-link a, .nav-tab { cursor: pointer !important; }
 input[type="text"], input[type="tel"], input[type="email"], 
-input[type="password"], input[type="number"], textarea, select {
-  cursor: text !important;
-}
+input[type="password"], input[type="number"], textarea, select { cursor: text !important; }
 input[type="file"] { cursor: pointer !important; }
-
-/* Text Select Fix - Sirf input/textarea mein select hoga */
-* { 
-  -webkit-user-select: none; 
-  -moz-user-select: none; 
-  -ms-user-select: none; 
-  user-select: none; 
-}
-input, textarea, [contenteditable="true"] { 
-  -webkit-user-select: text !important; 
-  -moz-user-select: text !important; 
-  user-select: text !important; 
-}
-
+* { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+input, textarea, [contenteditable="true"] { -webkit-user-select: text !important; -moz-user-select: text !important; user-select: text !important; }
 @media (max-width: 768px) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.1s !important; }
   .particle { animation-duration: 20s !important; animation-iteration-count: infinite !important; }
   .logo-badge { animation: none !important; }
   .orb { animation-duration: 30s !important; }
 }
-
-/* Animation Performance Fix */
 .animated {
   animation-play-state: paused !important;
   opacity: 0;
@@ -1073,13 +1121,8 @@ input, textarea, [contenteditable="true"] {
   opacity: 1;
   transform: translateY(0);
 }
-.particle {
-  animation-play-state: paused;
-}
-.particle.visible {
-  animation-play-state: running;
-}
-
+.particle { animation-play-state: paused; }
+.particle.visible { animation-play-state: running; }
 </style>
 </head>
 <body>
@@ -1104,9 +1147,7 @@ for(let i = 0; i < particleCount; i++) {
   <div class="tricolor"></div>
   <div class="header-inner">
     <div class="logo" onclick="goHome()">
-      <div class="logo-badge">
-        <span>⚖️</span>
-      </div>
+      <div class="logo-badge"><span>⚖️</span></div>
       <div class="logo-title">
         <span class="letter">G</span><span class="letter">r</span><span class="letter">i</span><span class="letter">e</span><span class="letter">v</span><span class="letter">A</span><span class="letter">I</span> <span class="letter">P</span><span class="letter">o</span><span class="letter">r</span><span class="letter">t</span><span class="letter">a</span><span class="letter">l</span>
       </div>
@@ -1149,7 +1190,7 @@ for(let i = 0; i < particleCount; i++) {
     </div>
   </div>
 
-  <!-- SUBMIT PAGE -->
+  <!-- SUBMIT PAGE with OTP Verification -->
   <div id="page-submit" class="page">
     <div class="card">
       <div class="card-header"><div class="card-header-icon icon-saffron">📝</div><h3>नई शिकायत दर्ज करें</h3></div>
@@ -1157,7 +1198,12 @@ for(let i = 0; i < particleCount; i++) {
         <div id="submitAlert" class="alert"></div>
         <div class="form-grid">
           <div class="form-group"><label>पूरा नाम *</label><input type="text" id="sub-name" placeholder="सुनील कुशवाहा"></div>
-          <div class="form-group"><label>मोबाइल *</label><input type="tel" id="sub-mobile" placeholder="90XXXXXXXX"></div>
+          <div class="form-group"><label>मोबाइल *</label>
+            <div style="display:flex; gap:8px;">
+              <input type="tel" id="sub-mobile" placeholder="90XXXXXXXX" style="flex:1;">
+              <button type="button" class="btn-secondary btn-small" id="sendOtpBtn" onclick="sendComplaintOtp()" style="width: auto; margin:0; padding:8px 16px;">📨 OTP भेजें</button>
+            </div>
+          </div>
           <div class="form-group"><label>ईमेल</label><input type="email" id="sub-email" placeholder="you@example.com"></div>
           <div class="form-group"><label>जिला</label><select id="sub-district"><option>Indore</option><option>Bhopal</option><option>Jabalpur</option><option>Gwalior</option><option>Ujjain</option></select></div>
           <div class="form-group"><label>क्षेत्र</label><input type="text" id="sub-area" placeholder="विजय नगर"></div>
@@ -1184,10 +1230,7 @@ for(let i = 0; i < particleCount; i++) {
             <small>JPG, PNG - अधिकतम 5 फोटो</small>
           </div>
           <div class="thumbs" id="photoThumbs"></div>
-          <div class="form-group" style="margin-top: 15px;">
-            <label>फोटो विवरण</label>
-            <textarea id="photo-desc" rows="3" placeholder="AI से विश्लेषण करें या मैन्युअल लिखें"></textarea>
-          </div>
+          <div class="form-group" style="margin-top: 15px;"><label>फोटो विवरण</label><textarea id="photo-desc" rows="3" placeholder="AI से विश्लेषण करें या मैन्युअल लिखें"></textarea></div>
           <button class="btn-secondary" onclick="analyzePhoto()" id="analyzeBtn">🤖 AI से विश्लेषण करें</button>
         </div>
 
@@ -1198,15 +1241,10 @@ for(let i = 0; i < particleCount; i++) {
         <div class="loc-box">
           <div class="loc-row">
             <button class="btn-loc" onclick="getUserLocation()" id="locBtn">📍 लोकेशन लें (अनिवार्य)</button>
-            <div class="loc-info">
-              <div id="locText" style="font-size:0.75rem; font-family:monospace;">लोकेशन नहीं ली गई</div>
-              <div id="locAddr" style="font-size:0.7rem; color:var(--muted);"></div>
-            </div>
+            <div class="loc-info"><div id="locText" style="font-size:0.75rem; font-family:monospace;">लोकेशन नहीं ली गई</div><div id="locAddr" style="font-size:0.7rem; color:var(--muted);"></div></div>
             <span id="locBadge" class="loc-badge lb-no">❌ नहीं ली</span>
           </div>
-          <div id="locMap" style="display:none; margin-top:12px;">
-            <iframe id="mapFrame" style="width:100%; height:180px; border-radius:12px; border:none;"></iframe>
-          </div>
+          <div id="locMap" style="display:none; margin-top:12px;"><iframe id="mapFrame" style="width:100%; height:180px; border-radius:12px; border:none;"></iframe></div>
         </div>
         <div style="font-size:0.65rem; color:var(--red); margin-top:8px;">⚠️ लोकेशन लेना अनिवार्य है - इसके बिना शिकायत सबमिट नहीं होगी</div>
 
@@ -1215,16 +1253,28 @@ for(let i = 0; i < particleCount; i++) {
     </div>
   </div>
 
+  <!-- OTP MODAL -->
+  <div id="otpModal" class="otp-overlay">
+    <div class="otp-modal">
+      <h3>📱 OTP सत्यापन</h3>
+      <p id="otpDesc">आपके मोबाइल पर OTP भेजा गया है</p>
+      <div class="otp-boxes">
+        <input class="otp-box" maxlength="1" id="otp0" oninput="otpMove(0)" onkeydown="otpKeyDown(event,0)"> <input class="otp-box" maxlength="1" id="otp1" oninput="otpMove(1)" onkeydown="otpKeyDown(event,1)">
+        <input class="otp-box" maxlength="1" id="otp2" oninput="otpMove(2)" onkeydown="otpKeyDown(event,2)"> <input class="otp-box" maxlength="1" id="otp3" oninput="otpMove(3)" onkeydown="otpKeyDown(event,3)">
+        <input class="otp-box" maxlength="1" id="otp4" oninput="otpMove(4)" onkeydown="otpKeyDown(event,4)"> <input class="otp-box" maxlength="1" id="otp5" oninput="otpMove(5)" onkeydown="otpKeyDown(event,5)">
+      </div>
+      <div class="otp-resend">OTP नहीं आया? <span onclick="resendComplaintOtp()">पुनः भेजें</span></div>
+      <button class="btn-primary" onclick="verifyComplaintOtp()" style="margin-top:10px;">✅ सत्यापित करें</button>
+      <button class="otp-close" onclick="closeOtpModal()">बाद में करें</button>
+    </div>
+  </div>
+
   <!-- TRACK PAGE -->
   <div id="page-track" class="page">
-    <div class="card">
-      <div class="card-header"><div class="card-header-icon icon-purple">🔍</div><h3>शिकायत ट्रैक करें</h3></div>
+    <div class="card"><div class="card-header"><div class="card-header-icon icon-purple">🔍</div><h3>शिकायत ट्रैक करें</h3></div>
       <div class="card-body">
         <div id="trackAlert" class="alert"></div>
-        <div style="display:flex; gap:12px; margin-bottom:20px;">
-          <input type="text" id="trackId" placeholder="GRV-YYMMDD-XXXX" style="flex:1; padding:14px; border:2px solid rgba(0,0,0,0.1); border-radius:16px; transition:all 0.3s;">
-          <button class="btn-primary" onclick="trackComplaint()" style="width:auto; padding:14px 24px;">ट्रैक करें</button>
-        </div>
+        <div style="display:flex; gap:12px; margin-bottom:20px;"><input type="text" id="trackId" placeholder="GRV-YYMMDD-XXXX" style="flex:1; padding:14px; border:2px solid rgba(0,0,0,0.1); border-radius:16px;"><button class="btn-primary" onclick="trackComplaint()" style="width:auto; padding:14px 24px;">ट्रैक करें</button></div>
         <div id="trackResult" style="display:none;"></div>
       </div>
     </div>
@@ -1238,58 +1288,26 @@ for(let i = 0; i < particleCount; i++) {
       <div class="stat-card"><div class="stat-value" id="dashCritical">0</div><div class="stat-label">अत्यावश्यक</div></div>
       <div class="stat-card"><div class="stat-value">94%</div><div class="stat-label">AI सटीकता</div></div>
     </div>
-    <div class="card">
-      <div class="card-header"><div class="card-header-icon icon-teal">📊</div><h3>विभाग-वार आंकड़े</h3></div>
-      <div class="card-body" id="deptStats">लोड हो रहा...</div>
-    </div>
+    <div class="card"><div class="card-header"><div class="card-header-icon icon-teal">📊</div><h3>विभाग-वार आंकड़े</h3></div><div class="card-body" id="deptStats">लोड हो रहा...</div></div>
   </div>
 
   <!-- FEEDBACK PAGE -->
   <div id="page-feedback" class="page">
-    <div class="card">
-      <div class="card-header"><div class="card-header-icon icon-pink">⭐</div><h3>अपनी राय दें</h3></div>
+    <div class="card"><div class="card-header"><div class="card-header-icon icon-pink">⭐</div><h3>अपनी राय दें</h3></div>
       <div class="card-body">
         <div id="feedbackAlert" class="alert"></div>
         <div class="feedback-card">
-          <div style="text-align:center; margin-bottom:15px;">
-            <p style="font-size:0.9rem; color:var(--text);">GrievAI Portal के बारे में अपनी राय दें</p>
-            <p style="font-size:0.7rem; color:var(--muted);">आपकी प्रतिक्रिया हमारे लिए महत्वपूर्ण है</p>
-          </div>
-          <div class="rating-stars" id="ratingStars">
-            <span class="rating-star" data-value="1">★</span>
-            <span class="rating-star" data-value="2">★</span>
-            <span class="rating-star" data-value="3">★</span>
-            <span class="rating-star" data-value="4">★</span>
-            <span class="rating-star" data-value="5">★</span>
-          </div>
-          <div class="form-group" style="margin-top:15px;">
-            <label>आपकी प्रतिक्रिया</label>
-            <textarea id="feedbackMsg" rows="4" placeholder="अपनी राय या सुझाव लिखें..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>आपका नाम (optional)</label>
-            <input type="text" id="feedbackName" placeholder="आपका नाम">
-          </div>
+          <div style="text-align:center; margin-bottom:15px;"><p style="font-size:0.9rem; color:var(--text);">GrievAI Portal के बारे में अपनी राय दें</p><p style="font-size:0.7rem; color:var(--muted);">आपकी प्रतिक्रिया हमारे लिए महत्वपूर्ण है</p></div>
+          <div class="rating-stars" id="ratingStars"><span class="rating-star" data-value="1">★</span><span class="rating-star" data-value="2">★</span><span class="rating-star" data-value="3">★</span><span class="rating-star" data-value="4">★</span><span class="rating-star" data-value="5">★</span></div>
+          <div class="form-group" style="margin-top:15px;"><label>आपकी प्रतिक्रिया</label><textarea id="feedbackMsg" rows="4" placeholder="अपनी राय या सुझाव लिखें..."></textarea></div>
+          <div class="form-group"><label>आपका नाम (optional)</label><input type="text" id="feedbackName" placeholder="आपका नाम"></div>
           <button class="btn-primary" onclick="submitFeedback()" id="feedbackBtn">⭐ सबमिट करें</button>
-          <div id="feedbackThanks" style="display:none; margin-top:15px; padding:15px; background:linear-gradient(135deg,#E8F5E9,#C8E6C9); border-radius:16px; text-align:center; animation:cardFadeUp 0.5s ease;">
-            <span style="font-size:2rem;">🙏</span>
-            <p style="font-weight:700; margin-top:5px;">धन्यवाद!</p>
-            <p style="font-size:0.75rem;">आपकी प्रतिक्रिया सफलतापूर्वक प्राप्त हो गई।</p>
-          </div>
+          <div id="feedbackThanks" style="display:none; margin-top:15px; padding:15px; background:linear-gradient(135deg,#E8F5E9,#C8E6C9); border-radius:16px; text-align:center;"><span style="font-size:2rem;">🙏</span><p style="font-weight:700; margin-top:5px;">धन्यवाद!</p><p style="font-size:0.75rem;">आपकी प्रतिक्रिया सफलतापूर्वक प्राप्त हो गई।</p></div>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-header"><div class="card-header-icon icon-blue">📊</div><h3>उपयोगकर्ता रेटिंग</h3></div>
-      <div class="card-body" id="ratingStats">
-        <div style="text-align:center; padding:20px;">
-          <div style="font-size:2.5rem; color:var(--gold);" id="avgRating">0.0</div>
-          <div style="font-size:0.8rem; color:var(--muted);">औसत रेटिंग</div>
-          <div style="margin-top:10px;">
-            <span id="totalRatings">0</span> <span style="color:var(--muted);">रेटिंग्स</span>
-          </div>
-        </div>
-      </div>
+    <div class="card"><div class="card-header"><div class="card-header-icon icon-blue">📊</div><h3>उपयोगकर्ता रेटिंग</h3></div>
+      <div class="card-body"><div style="text-align:center; padding:20px;"><div style="font-size:2.5rem; color:var(--gold);" id="avgRating">0.0</div><div style="font-size:0.8rem; color:var(--muted);">औसत रेटिंग</div><div style="margin-top:10px;"><span id="totalRatings">0</span> <span style="color:var(--muted);">रेटिंग्स</span></div></div></div>
     </div>
   </div>
 </main>
@@ -1299,7 +1317,7 @@ for(let i = 0; i < particleCount; i++) {
   <div class="success-modal">
     <div class="success-icon">✅</div>
     <h3>शिकायत सफलतापूर्वक दर्ज!</h3>
-    <div class="cid" id="successCid" style="font-family:'Space Mono', monospace; font-size:1.2rem; font-weight:700; color:var(--saffron); background:#FFF0E6; padding:8px 16px; border-radius:30px; display:inline-block; margin:15px 0;">GRV-250101-1234</div>
+    <div class="cid" id="successCid">GRV-250101-1234</div>
     <p id="successMsg">आपकी शिकायत AI द्वारा वर्गीकृत कर दी गई है।</p>
     <button class="btn-primary" onclick="closeSuccessModal()" style="margin-top:20px;">ठीक है</button>
   </div>
@@ -1311,17 +1329,7 @@ for(let i = 0; i < particleCount; i++) {
 
 <script>
 // Check login
-// Auth check
-if(!localStorage.getItem('grv_token')) { 
-  window.location.href='/login.html'; 
-} else {
-  // User ka naam show karo
-  try {
-    let user = JSON.parse(localStorage.getItem('grv_user') || '{}');
-    let nameEl = document.getElementById('user-name');
-    if(nameEl && user.name) nameEl.innerText = user.name;
-  } catch(e) {}
-}
+if(!localStorage.getItem('grv_token')) { window.location.href='/login.html'; }
 
 // Variables
 let currentMode = 'voice';
@@ -1330,6 +1338,71 @@ let isListening = false;
 let userLocation = null;
 let userPhotos = [];
 let selectedRating = 0;
+let complaintMobile = '';
+let complaintOtpVerified = false;
+
+// OTP Functions
+function otpMove(i) {
+  let next = document.getElementById('otp' + (i+1));
+  if(next && document.getElementById('otp'+i).value) next.focus();
+}
+function otpKeyDown(e, i) {
+  if(e.key === 'Backspace' && !document.getElementById('otp'+i).value && i>0) document.getElementById('otp'+(i-1)).focus();
+}
+function getOtpValue() {
+  let otp = '';
+  for(let i=0;i<6;i++) otp += document.getElementById('otp'+i).value || '';
+  return otp;
+}
+function closeOtpModal() { document.getElementById('otpModal').style.display = 'none'; }
+
+async function sendComplaintOtp() {
+  let mobile = document.getElementById('sub-mobile').value.trim();
+  if(!mobile || mobile.length < 10) { showAlert('submitAlert', 'सही मोबाइल नंबर डालें', true); return; }
+  complaintMobile = mobile;
+  let btn = document.getElementById('sendOtpBtn');
+  btn.disabled = true; btn.textContent = '⏳...';
+  try {
+    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: mobile }) });
+    let data = await res.json();
+    if(data.success) {
+      document.getElementById('otpDesc').innerHTML = data.test_mode ? '✅ OTP terminal में print हुआ! Check your terminal window' : 'OTP आपके मोबाइल पर भेज दिया गया है';
+      document.getElementById('otpModal').style.display = 'flex';
+      document.getElementById('otp0').focus();
+      for(let i=0;i<6;i++) document.getElementById('otp'+i).value = '';
+      complaintOtpVerified = false;
+      showAlert('submitAlert', '✅ OTP भेजा गया! Terminal में देखें', false);
+    } else { showAlert('submitAlert', data.error || 'OTP भेजने में समस्या', true); }
+  } catch(e) { showAlert('submitAlert', 'सर्वर कनेक्ट नहीं हो पा रहा', true); }
+  btn.disabled = false; btn.textContent = '📨 OTP भेजें';
+}
+
+async function resendComplaintOtp() {
+  if(!complaintMobile) { showAlert('submitAlert', 'पहले मोबाइल नंबर डालें', true); closeOtpModal(); return; }
+  try {
+    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: complaintMobile }) });
+    let data = await res.json();
+    if(data.success) {
+      showAlert('submitAlert', '✅ OTP पुनः भेजा गया! Terminal में देखें', false);
+      for(let i=0;i<6;i++) document.getElementById('otp'+i).value = '';
+      document.getElementById('otp0').focus();
+    } else { showAlert('submitAlert', data.error || 'OTP भेजने में समस्या', true); }
+  } catch(e) { showAlert('submitAlert', 'सर्वर एरर', true); }
+}
+
+async function verifyComplaintOtp() {
+  let otp = getOtpValue();
+  if(otp.length !== 6) { showAlert('submitAlert', '6 अंक OTP डालें', true); return; }
+  try {
+    let res = await fetch('/api/otp/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: complaintMobile, otp: otp }) });
+    let data = await res.json();
+    if(data.success) {
+      complaintOtpVerified = true;
+      closeOtpModal();
+      showAlert('submitAlert', '✅ मोबाइल सत्यापित! अब शिकायत दर्ज करें', false);
+    } else { showAlert('submitAlert', data.error || 'OTP गलत या एक्सपायर', true); }
+  } catch(e) { showAlert('submitAlert', 'सर्वर एरर', true); }
+}
 
 // Rating Stars
 function initRatingStars() {
@@ -1337,26 +1410,7 @@ function initRatingStars() {
   stars.forEach(star => {
     star.addEventListener('click', () => {
       selectedRating = parseInt(star.dataset.value);
-      stars.forEach(s => {
-        if(parseInt(s.dataset.value) <= selectedRating) {
-          s.classList.add('active');
-        } else {
-          s.classList.remove('active');
-        }
-      });
-    });
-    star.addEventListener('mouseenter', () => {
-      const val = parseInt(star.dataset.value);
-      stars.forEach(s => {
-        if(parseInt(s.dataset.value) <= val) {
-          s.style.transform = 'scale(1.1)';
-        }
-      });
-    });
-    star.addEventListener('mouseleave', () => {
-      stars.forEach(s => {
-        s.style.transform = 'scale(1)';
-      });
+      stars.forEach(s => { if(parseInt(s.dataset.value) <= selectedRating) s.classList.add('active'); else s.classList.remove('active'); });
     });
   });
 }
@@ -1366,26 +1420,12 @@ async function submitFeedback() {
   const rating = selectedRating;
   const message = document.getElementById('feedbackMsg').value.trim();
   const name = document.getElementById('feedbackName').value.trim() || 'Anonymous';
-  
-  if(rating === 0) {
-    showAlert('feedbackAlert', 'कृपया रेटिंग दें', true);
-    return;
-  }
-  if(!message) {
-    showAlert('feedbackAlert', 'कृपया अपनी प्रतिक्रिया लिखें', true);
-    return;
-  }
-  
+  if(rating === 0) { showAlert('feedbackAlert', 'कृपया रेटिंग दें', true); return; }
+  if(!message) { showAlert('feedbackAlert', 'कृपया अपनी प्रतिक्रिया लिखें', true); return; }
   const btn = document.getElementById('feedbackBtn');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ सबमिट हो रहा...';
-  
+  btn.disabled = true; btn.innerHTML = '⏳ सबमिट हो रहा...';
   try {
-    const res = await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating, message, name })
-    });
+    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rating, message, name }) });
     const data = await res.json();
     if(data.success) {
       document.getElementById('feedbackThanks').style.display = 'block';
@@ -1395,41 +1435,22 @@ async function submitFeedback() {
       document.querySelectorAll('.rating-star').forEach(s => s.classList.remove('active'));
       showAlert('feedbackAlert', '✅ धन्यवाद! आपकी प्रतिक्रिया सबमिट हो गई', false);
       loadRatings();
-      setTimeout(() => {
-        document.getElementById('feedbackThanks').style.display = 'none';
-      }, 3000);
-    } else {
-      showAlert('feedbackAlert', data.error || 'सबमिट फेल', true);
-    }
-  } catch(e) {
-    showAlert('feedbackAlert', 'सर्वर एरर', true);
-  }
-  btn.disabled = false;
-  btn.innerHTML = '⭐ सबमिट करें';
+      setTimeout(() => { document.getElementById('feedbackThanks').style.display = 'none'; }, 3000);
+    } else { showAlert('feedbackAlert', data.error || 'सबमिट फेल', true); }
+  } catch(e) { showAlert('feedbackAlert', 'सर्वर एरर', true); }
+  btn.disabled = false; btn.innerHTML = '⭐ सबमिट करें';
 }
 
-// Load Ratings
 async function loadRatings() {
   try {
     const res = await fetch('/api/feedback');
     const data = await res.json();
-    if(data.success) {
-      const avg = data.averageRating || 0;
-      document.getElementById('avgRating').innerHTML = avg.toFixed(1);
-      document.getElementById('totalRatings').innerHTML = data.totalRatings || 0;
-    }
-  } catch(e) {
-    console.log('Rating load failed');
-  }
+    if(data.success) { document.getElementById('avgRating').innerHTML = (data.averageRating || 0).toFixed(1); document.getElementById('totalRatings').innerHTML = data.totalRatings || 0; }
+  } catch(e) { console.log('Rating load failed'); }
 }
 
 function goHome() { document.querySelector('.nav-item[data-page="home"]').click(); }
-
-function doLogout() {
-  localStorage.removeItem('grv_token');
-  localStorage.removeItem('grv_user');
-  window.location.href = '/login.html';
-}
+function doLogout() { localStorage.removeItem('grv_token'); localStorage.removeItem('grv_user'); window.location.href = '/login.html'; }
 
 // Navigation
 document.querySelectorAll('.nav-item').forEach(nav => {
@@ -1441,40 +1462,6 @@ document.querySelectorAll('.nav-item').forEach(nav => {
     nav.classList.add('active');
     if(page === 'dashboard') loadDashboard();
     if(page === 'home') loadHome();
-
-// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    } else {
-      entry.target.classList.remove('visible');
-    }
-  });
-}, { threshold: 0.1 });
-
-// Saare animated elements observe karo
-document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
-  el.classList.add('animated');
-  observer.observe(el);
-});
-
-// Particles bhi observe karo
-document.querySelectorAll('.particle').forEach(p => {
-  observer.observe(p);
-});
-
-// Mobile pe extra heavy animations band karo
-if(window.innerWidth < 768) {
-  document.querySelectorAll('[style*="animation"]').forEach(el => {
-    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
-      el.style.animation = 'none';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    }
-  });
-}
-
     if(page === 'feedback') { loadRatings(); initRatingStars(); }
   });
 });
@@ -1506,39 +1493,18 @@ function startRecording() {
   recognition.lang = 'hi-IN';
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.onstart = () => {
-    isListening = true;
-    document.getElementById('micBtn').classList.add('recording');
-    document.getElementById('micStatus').innerHTML = '🔴 बोल रहे हैं... रोकने के लिए दबाएं';
-  };
-  recognition.onresult = (e) => {
-    let text = '';
-    for(let i = e.resultIndex; i < e.results.length; i++) {
-      text += e.results[i][0].transcript;
-    }
-    document.getElementById('voice-text').value = text;
-  };
+  recognition.onstart = () => { isListening = true; document.getElementById('micBtn').classList.add('recording'); document.getElementById('micStatus').innerHTML = '🔴 बोल रहे हैं... रोकने के लिए दबाएं'; };
+  recognition.onresult = (e) => { let text = ''; for(let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript; document.getElementById('voice-text').value = text; };
   recognition.onerror = () => { stopRecording(); };
   recognition.start();
 }
-function stopRecording() {
-  if(recognition) { recognition.stop(); recognition = null; }
-  isListening = false;
-  document.getElementById('micBtn').classList.remove('recording');
-  document.getElementById('micStatus').innerHTML = 'माइक दबाएं और बोलें';
-}
-document.getElementById('micBtn')?.addEventListener('click', () => {
-  if(isListening) stopRecording();
-  else startRecording();
-});
+function stopRecording() { if(recognition) { recognition.stop(); recognition = null; } isListening = false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('micStatus').innerHTML = 'माइक दबाएं और बोलें'; }
+document.getElementById('micBtn')?.addEventListener('click', () => { if(isListening) stopRecording(); else startRecording(); });
 
 // Photo Upload
 const dropZone = document.getElementById('dropZone');
 const photoInput = document.createElement('input');
-photoInput.type = 'file';
-photoInput.accept = 'image/*';
-photoInput.multiple = true;
-photoInput.style.display = 'none';
+photoInput.type = 'file'; photoInput.accept = 'image/*'; photoInput.multiple = true; photoInput.style.display = 'none';
 document.body.appendChild(photoInput);
 if(dropZone) {
   dropZone.addEventListener('click', () => photoInput.click());
@@ -1551,73 +1517,44 @@ function handleFiles(files) {
   userPhotos = Array.from(files).slice(0,5);
   const thumbsDiv = document.getElementById('photoThumbs');
   thumbsDiv.innerHTML = '';
-  userPhotos.forEach((file, idx) => {
-    const url = URL.createObjectURL(file);
-    thumbsDiv.innerHTML += `<div class="thumb"><img src="${url}"><button class="thumb-del" onclick="removePhoto(${idx})">×</button></div>`;
-  });
+  userPhotos.forEach((file, idx) => { const url = URL.createObjectURL(file); thumbsDiv.innerHTML += `<div class="thumb"><img src="${url}"><button class="thumb-del" onclick="removePhoto(${idx})">×</button></div>`; });
 }
-function removePhoto(idx) {
-  userPhotos.splice(idx,1);
-  const dt = new DataTransfer();
-  userPhotos.forEach(f => dt.items.add(f));
-  photoInput.files = dt.files;
-  handleFiles(photoInput.files);
-}
+function removePhoto(idx) { userPhotos.splice(idx,1); const dt = new DataTransfer(); userPhotos.forEach(f => dt.items.add(f)); photoInput.files = dt.files; handleFiles(photoInput.files); }
 async function analyzePhoto() {
   if(!userPhotos.length) { showAlert('submitAlert', 'पहले फोटो अपलोड करें', true); return; }
   const btn = document.getElementById('analyzeBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ AI विश्लेषण कर रहा है...';
+  btn.disabled = true; btn.textContent = '⏳ AI विश्लेषण कर रहा है...';
   try {
     const reader = new FileReader();
     reader.onload = async () => {
       const b64 = reader.result.split(',')[1];
-      const res = await fetch('/api/analyze-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64, media_type: userPhotos[0].type })
-      });
+      const res = await fetch('/api/analyze-photo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: b64, media_type: userPhotos[0].type }) });
       const data = await res.json();
       document.getElementById('photo-desc').value = data.description || `${userPhotos.length} फोटो संलग्न।`;
       btn.textContent = '✅ विश्लेषण पूरा';
     };
     reader.readAsDataURL(userPhotos[0]);
-  } catch(e) {
-    btn.textContent = '🤖 AI से विश्लेषण करें';
-    showAlert('submitAlert', 'AI विश्लेषण फेल', true);
-  }
+  } catch(e) { btn.textContent = '🤖 AI से विश्लेषण करें'; showAlert('submitAlert', 'AI विश्लेषण फेल', true); }
   btn.disabled = false;
 }
 
-// Location Mandatory
+// Location
 function getUserLocation() {
   const btn = document.getElementById('locBtn');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ लोकेशन मिल रही...';
-  if(!navigator.geolocation) {
-    showAlert('submitAlert', 'GPS supported नहीं', true);
-    btn.disabled=false;
-    btn.innerHTML='📍 लोकेशन लें (अनिवार्य)';
-    return;
-  }
+  btn.disabled = true; btn.innerHTML = '⏳ लोकेशन मिल रही...';
+  if(!navigator.geolocation) { showAlert('submitAlert', 'GPS supported नहीं', true); btn.disabled=false; btn.innerHTML='📍 लोकेशन लें (अनिवार्य)'; return; }
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy };
       document.getElementById('locText').innerHTML = `${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)} (±${Math.round(userLocation.acc)}m)`;
-      document.getElementById('locBadge').innerHTML = '✅ मिल गई';
-      document.getElementById('locBadge').className = 'loc-badge lb-yes';
+      document.getElementById('locBadge').innerHTML = '✅ मिल गई'; document.getElementById('locBadge').className = 'loc-badge lb-yes';
       document.getElementById('locMap').style.display = 'block';
       document.getElementById('mapFrame').src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLocation.lng-0.005},${userLocation.lat-0.005},${userLocation.lng+0.005},${userLocation.lat+0.005}&layer=mapnik&marker=${userLocation.lat},${userLocation.lng}`;
-      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLocation.lat}&lon=${userLocation.lng}&format=json`)
-        .then(r=>r.json()).then(d=>{ document.getElementById('locAddr').innerHTML = d.display_name?.substring(0,100) || ''; }).catch(()=>{});
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLocation.lat}&lon=${userLocation.lng}&format=json`).then(r=>r.json()).then(d=>{ document.getElementById('locAddr').innerHTML = d.display_name?.substring(0,100) || ''; }).catch(()=>{});
       showAlert('submitAlert', '✅ लोकेशन मिल गई! अब शिकायत दर्ज करें', false);
       btn.innerHTML = '✅ लोकेशन मिल गई';
     },
-    (err) => {
-      showAlert('submitAlert', `❌ लोकेशन नहीं मिली: ${err.message}`, true);
-      btn.innerHTML = '📍 लोकेशन लें (अनिवार्य)';
-      btn.disabled = false;
-    },
+    (err) => { showAlert('submitAlert', `❌ लोकेशन नहीं मिली: ${err.message}`, true); btn.innerHTML = '📍 लोकेशन लें (अनिवार्य)'; btn.disabled = false; },
     { enableHighAccuracy: true, timeout: 10000 }
   );
   setTimeout(() => { btn.disabled = false; }, 5000);
@@ -1629,7 +1566,7 @@ function getComplaintText() {
   return document.getElementById('text-complaint').value.trim();
 }
 
-// Submit Complaint
+// Submit Complaint with OTP check
 async function submitComplaint() {
   const name = document.getElementById('sub-name').value.trim();
   const mobile = document.getElementById('sub-mobile').value.trim();
@@ -1638,101 +1575,40 @@ async function submitComplaint() {
   if(!name) { showAlert('submitAlert', 'नाम डालें', true); return; }
   if(!mobile || mobile.length < 10) { showAlert('submitAlert', 'सही मोबाइल डालें', true); return; }
   if(!text) { showAlert('submitAlert', 'शिकायत विवरण भरें', true); return; }
-  if(!userLocation) { showAlert('submitAlert', '⚠️ लोकेशन लेना अनिवार्य है! "लोकेशन लें" बटन दबाएं', true); return; }
+  if(!userLocation) { showAlert('submitAlert', '⚠️ लोकेशन लेना अनिवार्य है!', true); return; }
+  if(!complaintOtpVerified) { showAlert('submitAlert', '⚠️ पहले मोबाइल OTP सत्यापित करें! "OTP भेजें" बटन दबाएं', true); return; }
   
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ दर्ज हो रही है...';
+  btn.disabled = true; btn.innerHTML = '⏳ दर्ज हो रही है...';
   
   const payload = {
-    citizen_name: name,
-    mobile: mobile,
-    email: document.getElementById('sub-email').value.trim(),
-    raw_text: text,
-    district: document.getElementById('sub-district').value,
-    area: document.getElementById('sub-area').value,
-    latitude: userLocation.lat,
-    longitude: userLocation.lng,
-    location_accuracy: userLocation.acc,
-    input_mode: currentMode,
-    photo_count: userPhotos.length
+    citizen_name: name, mobile: mobile, email: document.getElementById('sub-email').value.trim(),
+    raw_text: text, district: document.getElementById('sub-district').value, area: document.getElementById('sub-area').value,
+    latitude: userLocation.lat, longitude: userLocation.lng, location_accuracy: userLocation.acc,
+    input_mode: currentMode, photo_count: userPhotos.length
   };
   
   try {
-    const res = await fetch('/api/complaints', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch('/api/complaints', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
     if(data.success) {
       document.getElementById('successCid').innerHTML = data.complaint_id;
       document.getElementById('successMsg').innerHTML = `आपकी शिकायत ${data.ai_result?.department || 'संबंधित'} विभाग को भेज दी गई है। प्राथमिकता: ${data.ai_result?.priority || 'medium'}`;
       document.getElementById('successModal').style.display = 'flex';
       // Reset form
-      document.getElementById('sub-name').value = '';
-      document.getElementById('sub-email').value = '';
-      document.getElementById('sub-area').value = '';
-      document.getElementById('voice-text').value = '';
-      document.getElementById('text-complaint').value = '';
-      document.getElementById('photo-desc').value = '';
-      userPhotos = [];
-      document.getElementById('photoThumbs').innerHTML = '';
-      userLocation = null;
-      document.getElementById('locText').innerHTML = 'लोकेशन नहीं ली गई';
-      document.getElementById('locBadge').innerHTML = '❌ नहीं ली';
-      document.getElementById('locBadge').className = 'loc-badge lb-no';
-      document.getElementById('locMap').style.display = 'none';
-      document.getElementById('locBtn').innerHTML = '📍 लोकेशन लें (अनिवार्य)';
-      loadHome();
-
-// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    } else {
-      entry.target.classList.remove('visible');
-    }
-  });
-}, { threshold: 0.1 });
-
-// Saare animated elements observe karo
-document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
-  el.classList.add('animated');
-  observer.observe(el);
-});
-
-// Particles bhi observe karo
-document.querySelectorAll('.particle').forEach(p => {
-  observer.observe(p);
-});
-
-// Mobile pe extra heavy animations band karo
-if(window.innerWidth < 768) {
-  document.querySelectorAll('[style*="animation"]').forEach(el => {
-    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
-      el.style.animation = 'none';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    }
-  });
+      document.getElementById('sub-name').value = ''; document.getElementById('sub-email').value = ''; document.getElementById('sub-area').value = '';
+      document.getElementById('voice-text').value = ''; document.getElementById('text-complaint').value = ''; document.getElementById('photo-desc').value = '';
+      userPhotos = []; document.getElementById('photoThumbs').innerHTML = ''; userLocation = null;
+      complaintOtpVerified = false;
+      document.getElementById('locText').innerHTML = 'लोकेशन नहीं ली गई'; document.getElementById('locBadge').innerHTML = '❌ नहीं ली'; document.getElementById('locBadge').className = 'loc-badge lb-no';
+      document.getElementById('locMap').style.display = 'none'; document.getElementById('locBtn').innerHTML = '📍 लोकेशन लें (अनिवार्य)';
+      loadHome(); loadDashboard();
+    } else { showAlert('submitAlert', data.error || 'सबमिट फेल', true); }
+  } catch(e) { showAlert('submitAlert', 'सर्वर एरर: ' + e.message, true); }
+  btn.disabled = false; btn.innerHTML = '🚀 शिकायत दर्ज करें';
 }
 
-      loadDashboard();
-    } else {
-      showAlert('submitAlert', data.error || 'सबमिट फेल', true);
-    }
-  } catch(e) {
-    showAlert('submitAlert', 'सर्वर एरर: ' + e.message, true);
-  }
-  btn.disabled = false;
-  btn.innerHTML = '🚀 शिकायत दर्ज करें';
-}
-
-function closeSuccessModal() {
-  document.getElementById('successModal').style.display = 'none';
-}
+function closeSuccessModal() { document.getElementById('successModal').style.display = 'none'; }
 
 // Track Complaint
 async function trackComplaint() {
@@ -1743,76 +1619,29 @@ async function trackComplaint() {
     const data = await res.json();
     if(!data.complaint) { showAlert('trackAlert', 'कंप्लेंट नहीं मिली', true); return; }
     const c = data.complaint;
-    document.getElementById('trackResult').innerHTML = `
-      <div style="background:rgba(242,238,231,0.8); border-radius:20px; padding:20px; animation:cardFadeUp 0.4s ease;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
-          <div><strong>ID</strong><br>${c.complaint_id}</div>
-          <div><strong>नाम</strong><br>${c.citizen_name}</div>
-          <div><strong>विभाग</strong><br>${c.department || '—'}</div>
-          <div><strong>स्थिति</strong><br><span style="display:inline-block; padding:3px 10px; border-radius:30px; font-size:0.65rem; font-weight:700; background:#E3F2FD; color:#1565C0;">${c.status}</span></div>
-          <div><strong>प्राथमिकता</strong><br>${c.priority}</div>
-          <div><strong>अधिकारी</strong><br>${c.officer_name || '—'}</div>
-        </div>
-        <div><strong>शिकायत</strong><p style="margin-top:6px">${c.raw_text}</p></div>
-        <div style="margin-top:16px;"><strong>टाइमलाइन</strong>
-          <div style="margin-top:10px;">
-            ${(data.timeline || []).map(t => `
-              <div class="timeline-item">
-                <div style="font-weight:700">${t.event_title}</div>
-                <div style="font-size:0.75rem; color:var(--muted)">${t.event_time?.split('T')[0] || ''}</div>
-                <div style="font-size:0.8rem">${t.event_desc || ''}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>`;
+    document.getElementById('trackResult').innerHTML = `<div style="background:rgba(242,238,231,0.8); border-radius:20px; padding:20px;"><div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;"><div><strong>ID</strong><br>${c.complaint_id}</div><div><strong>नाम</strong><br>${c.citizen_name}</div><div><strong>विभाग</strong><br>${c.department || '—'}</div><div><strong>स्थिति</strong><br><span style="display:inline-block; padding:3px 10px; border-radius:30px; font-size:0.65rem; font-weight:700; background:#E3F2FD; color:#1565C0;">${c.status}</span></div><div><strong>प्राथमिकता</strong><br>${c.priority}</div><div><strong>अधिकारी</strong><br>${c.officer_name || '—'}</div></div><div><strong>शिकायत</strong><p style="margin-top:6px">${c.raw_text}</p></div><div style="margin-top:16px;"><strong>टाइमलाइन</strong><div>${(data.timeline || []).map(t => `<div class="timeline-item"><div style="font-weight:700">${t.event_title}</div><div style="font-size:0.75rem; color:var(--muted)">${t.event_time?.split('T')[0] || ''}</div><div style="font-size:0.8rem">${t.event_desc || ''}</div></div>`).join('')}</div></div></div>`;
     document.getElementById('trackResult').style.display = 'block';
-  } catch(e) {
-    showAlert('trackAlert', 'सर्वर एरर', true);
-  }
+  } catch(e) { showAlert('trackAlert', 'सर्वर एरर', true); }
 }
 
-// Load Home
-// Cache API responses
+// Cache API
 let _cache = {};
 async function apiFetch(url, ttl=30000) {
   let now = Date.now();
   if(_cache[url] && (now - _cache[url].t) < ttl) return _cache[url].d;
-  try {
-    let d = await (await fetch(url)).json();
-    _cache[url] = {d, t: now};
-    return d;
-  } catch(e) { return _cache[url]?.d || {}; }
+  try { let d = await (await fetch(url)).json(); _cache[url] = {d, t: now}; return d; } catch(e) { return _cache[url]?.d || {}; }
 }
 
 async function loadHome() {
   const icons = {'Water Supply':'💧','Roads & PWD':'🛣️','Electricity':'⚡','Sanitation':'🗑️','Public Services':'📋','Healthcare':'🏥'};
   const [d, a] = await Promise.all([apiFetch('/api/departments'), apiFetch('/api/analytics')]);
-  try {
-    document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep =>
-      `<div class="dept-row"><span>${icons[dep.name]||'🏢'} ${dep.name}</span><span style="color:var(--saffron);font-weight:700;">${dep.officer_name}</span></div>`
-    ).join('');
-  } catch(e) {}
-  try {
-    document.getElementById('stat-total').innerText = a.summary?.total_complaints || 0;
-    document.getElementById('stat-resolved').innerText = a.summary?.resolved_today || 0;
-    document.getElementById('stat-critical').innerText = a.priority_stats?.critical || 0;
-  } catch(e) {}
+  try { document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep => `<div class="dept-row"><span>${icons[dep.name]||'🏢'} ${dep.name}</span><span style="color:var(--saffron);font-weight:700;">${dep.officer_name}</span></div>`).join(''); } catch(e) {}
+  try { document.getElementById('stat-total').innerText = a.summary?.total_complaints || 0; document.getElementById('stat-resolved').innerText = a.summary?.resolved_today || 0; document.getElementById('stat-critical').innerText = a.priority_stats?.critical || 0; } catch(e) {}
 }
 
 async function loadDashboard() {
   const [a, d] = await Promise.all([apiFetch('/api/analytics'), apiFetch('/api/departments')]);
-  try {
-    document.getElementById('dashTotal').innerText = a.summary?.total_complaints || 0;
-    document.getElementById('dashResolved').innerText = a.summary?.resolved_today || 0;
-    document.getElementById('dashCritical').innerText = a.priority_stats?.critical || 0;
-    document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
-        <span>${dep.name}</span>
-        <span style="background:linear-gradient(135deg,#FFF0E6,#FFE0CC);padding:4px 12px;border-radius:30px;font-weight:700;">${dep.complaint_count} शिकायतें</span>
-      </div>`
-    ).join('');
-  } catch(e) {}
+  try { document.getElementById('dashTotal').innerText = a.summary?.total_complaints || 0; document.getElementById('dashResolved').innerText = a.summary?.resolved_today || 0; document.getElementById('dashCritical').innerText = a.priority_stats?.critical || 0; document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05);"><span>${dep.name}</span><span style="background:linear-gradient(135deg,#FFF0E6,#FFE0CC);padding:4px 12px;border-radius:30px;font-weight:700;">${dep.complaint_count} शिकायतें</span></div>`).join(''); } catch(e) {}
 }
 
 function showAlert(id, msg, isError) {
@@ -1823,41 +1652,14 @@ function showAlert(id, msg, isError) {
   setTimeout(() => el.style.display = 'none', 5000);
 }
 
-loadHome();
-
-// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
+// Intersection Observer for animations
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    } else {
-      entry.target.classList.remove('visible');
-    }
-  });
+  entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); else entry.target.classList.remove('visible'); });
 }, { threshold: 0.1 });
+document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => { el.classList.add('animated'); observer.observe(el); });
+document.querySelectorAll('.particle').forEach(p => { observer.observe(p); });
 
-// Saare animated elements observe karo
-document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
-  el.classList.add('animated');
-  observer.observe(el);
-});
-
-// Particles bhi observe karo
-document.querySelectorAll('.particle').forEach(p => {
-  observer.observe(p);
-});
-
-// Mobile pe extra heavy animations band karo
-if(window.innerWidth < 768) {
-  document.querySelectorAll('[style*="animation"]').forEach(el => {
-    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
-      el.style.animation = 'none';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    }
-  });
-}
-
+loadHome();
 </script>
 </body>
 </html>
