@@ -1060,6 +1060,26 @@ input, textarea, [contenteditable="true"] {
   .logo-badge { animation: none !important; }
   .orb { animation-duration: 30s !important; }
 }
+
+/* Animation Performance Fix */
+.animated {
+  animation-play-state: paused !important;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.animated.visible {
+  animation-play-state: running !important;
+  opacity: 1;
+  transform: translateY(0);
+}
+.particle {
+  animation-play-state: paused;
+}
+.particle.visible {
+  animation-play-state: running;
+}
+
 </style>
 </head>
 <body>
@@ -1421,6 +1441,40 @@ document.querySelectorAll('.nav-item').forEach(nav => {
     nav.classList.add('active');
     if(page === 'dashboard') loadDashboard();
     if(page === 'home') loadHome();
+
+// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    } else {
+      entry.target.classList.remove('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+// Saare animated elements observe karo
+document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
+  el.classList.add('animated');
+  observer.observe(el);
+});
+
+// Particles bhi observe karo
+document.querySelectorAll('.particle').forEach(p => {
+  observer.observe(p);
+});
+
+// Mobile pe extra heavy animations band karo
+if(window.innerWidth < 768) {
+  document.querySelectorAll('[style*="animation"]').forEach(el => {
+    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    }
+  });
+}
+
     if(page === 'feedback') { loadRatings(); initRatingStars(); }
   });
 });
@@ -1631,6 +1685,40 @@ async function submitComplaint() {
       document.getElementById('locMap').style.display = 'none';
       document.getElementById('locBtn').innerHTML = '📍 लोकेशन लें (अनिवार्य)';
       loadHome();
+
+// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    } else {
+      entry.target.classList.remove('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+// Saare animated elements observe karo
+document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
+  el.classList.add('animated');
+  observer.observe(el);
+});
+
+// Particles bhi observe karo
+document.querySelectorAll('.particle').forEach(p => {
+  observer.observe(p);
+});
+
+// Mobile pe extra heavy animations band karo
+if(window.innerWidth < 768) {
+  document.querySelectorAll('[style*="animation"]').forEach(el => {
+    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    }
+  });
+}
+
       loadDashboard();
     } else {
       showAlert('submitAlert', data.error || 'सबमिट फेल', true);
@@ -1736,6 +1824,40 @@ function showAlert(id, msg, isError) {
 }
 
 loadHome();
+
+// ─── Intersection Observer — Sirf screen pe ho tab animate karo ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    } else {
+      entry.target.classList.remove('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+// Saare animated elements observe karo
+document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => {
+  el.classList.add('animated');
+  observer.observe(el);
+});
+
+// Particles bhi observe karo
+document.querySelectorAll('.particle').forEach(p => {
+  observer.observe(p);
+});
+
+// Mobile pe extra heavy animations band karo
+if(window.innerWidth < 768) {
+  document.querySelectorAll('[style*="animation"]').forEach(el => {
+    if(!el.classList.contains('particle') && !el.classList.contains('logo-badge')) {
+      el.style.animation = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    }
+  });
+}
+
 </script>
 </body>
 </html>
