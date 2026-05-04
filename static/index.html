@@ -4,10 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GrievAI Portal | MP Government</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
-<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
   --saffron: #FF6200;
@@ -37,7 +34,7 @@
   --orange: #E65100;
   --indigo: #3949AB;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; cursor: default; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'Noto Sans Devanagari', sans-serif;
   background: linear-gradient(135deg, #0B1E33 0%, #1A3A5C 50%, #0B1E33 100%);
@@ -96,7 +93,6 @@ header {
   padding: 12px 24px;
   flex-wrap: wrap;
 }
-/* Animated Logo with Wave Effect */
 .logo {
   display: flex;
   align-items: center;
@@ -145,25 +141,6 @@ header {
   50% { opacity: 0.3; width: 180%; height: 180%; }
   100% { transform: translate(-50%, -50%) scale(2); opacity: 0; width: 250%; height: 250%; }
 }
-.logo-badge::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(245,197,24,0.3), transparent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
-  animation: waveRippleDelay 3s ease-out infinite 0.6s;
-  pointer-events: none;
-}
-@keyframes waveRippleDelay {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; width: 100%; height: 100%; }
-  50% { opacity: 0.2; width: 180%; height: 180%; }
-  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; width: 250%; height: 250%; }
-}
 .logo-badge span {
   animation: logoIconPulse 2s infinite;
   display: inline-block;
@@ -182,42 +159,9 @@ header {
   display: inline-block;
   animation: titleFadeIn 0.8s ease;
 }
-@keyframes titleFadeIn {
-  from { opacity: 0; transform: translateX(-20px); letter-spacing: 0px; }
-  to { opacity: 1; transform: translateX(0); letter-spacing: 2px; }
-}
-.logo-title::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--gold), var(--saffron));
-  transition: width 0.5s ease;
-}
-.logo:hover .logo-title::after {
-  width: 100%;
-}
 .logo-title .letter {
   display: inline-block;
   animation: letterPop 0.5s ease backwards;
-}
-.logo-title .letter:nth-child(1) { animation-delay: 0s; }
-.logo-title .letter:nth-child(2) { animation-delay: 0.05s; }
-.logo-title .letter:nth-child(3) { animation-delay: 0.1s; }
-.logo-title .letter:nth-child(4) { animation-delay: 0.15s; }
-.logo-title .letter:nth-child(5) { animation-delay: 0.2s; }
-.logo-title .letter:nth-child(6) { animation-delay: 0.25s; }
-.logo-title .letter:nth-child(7) { animation-delay: 0.3s; }
-.logo-title .letter:nth-child(8) { animation-delay: 0.35s; }
-.logo-title .letter:nth-child(9) { animation-delay: 0.4s; }
-.logo-title .letter:nth-child(10) { animation-delay: 0.45s; }
-.logo-title .letter:nth-child(11) { animation-delay: 0.5s; }
-.logo-title .letter:nth-child(12) { animation-delay: 0.55s; }
-@keyframes letterPop {
-  0% { opacity: 0; transform: translateY(20px) rotateX(90deg); }
-  100% { opacity: 1; transform: translateY(0) rotateX(0); }
 }
 .user-area {
   display: flex;
@@ -243,24 +187,10 @@ header {
   font-size: 0.7rem;
   font-weight: 600;
   transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
 }
-.logout-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-.logout-btn:hover::before { left: 100%; }
 .logout-btn:hover {
   background: linear-gradient(135deg, var(--saffron), var(--saffron2));
   transform: scale(1.05);
-  border-color: var(--saffron);
 }
 .nav {
   display: flex;
@@ -289,19 +219,9 @@ header {
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
-.nav-item:hover::after {
-  width: 80%;
-}
-.nav-item:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.05);
-}
-.nav-item.active {
-  color: var(--gold);
-}
-.nav-item.active::after {
-  width: 80%;
-}
+.nav-item:hover::after { width: 80%; }
+.nav-item.active { color: var(--gold); }
+.nav-item.active::after { width: 80%; }
 /* Main */
 main {
   max-width: 1200px;
@@ -309,19 +229,13 @@ main {
   padding: 30px 20px;
   width: 100%;
   flex: 1;
-  position: relative;
   z-index: 1;
 }
-.page {
-  display: none;
-}
-.page.active {
-  display: block;
-  animation: pageReveal 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-}
+.page { display: none; }
+.page.active { display: block; animation: pageReveal 0.5s ease; }
 @keyframes pageReveal {
-  0% { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(5px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 /* Hero */
 .hero {
@@ -331,37 +245,19 @@ main {
   padding: 40px;
   margin-bottom: 30px;
   color: white;
-  position: relative;
-  overflow: hidden;
   animation: heroGlow 3s infinite;
 }
 @keyframes heroGlow {
   0%,100% { box-shadow: 0 0 0 0 rgba(245,197,24,0); }
   50% { box-shadow: 0 0 30px 10px rgba(245,197,24,0.15); }
 }
-.hero h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2.8rem;
-}
-.hero h1 span {
-  color: var(--gold);
-  display: inline-block;
-  animation: textBounce 2s infinite;
-}
+.hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; }
+.hero h1 span { color: var(--gold); animation: textBounce 2s infinite; display: inline-block; }
 @keyframes textBounce {
   0%,100% { transform: translateY(0); }
   50% { transform: translateY(-8px); text-shadow: 0 5px 20px rgba(245,197,24,0.5); }
 }
-.hero p {
-  margin-top: 10px;
-  color: rgba(255,255,255,0.7);
-}
-.hero-buttons {
-  margin-top: 20px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
+.hero-buttons { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
 /* Cards */
 .card {
   background: rgba(255,255,255,0.95);
@@ -371,20 +267,15 @@ main {
   margin-bottom: 24px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.2);
-  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  transition: all 0.3s;
   animation: cardFadeUp 0.5s ease forwards;
   opacity: 0;
   transform: translateY(20px);
 }
 .card:nth-child(1) { animation-delay: 0.1s; }
 .card:nth-child(2) { animation-delay: 0.2s; }
-@keyframes cardFadeUp {
-  to { opacity: 1; transform: translateY(0); }
-}
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-}
+@keyframes cardFadeUp { to { opacity: 1; transform: translateY(0); } }
+.card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
 .card-header {
   padding: 20px 24px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -403,29 +294,17 @@ main {
   font-size: 1.3rem;
   transition: all 0.3s;
 }
-.card:hover .card-header-icon {
-  transform: rotate(360deg) scale(1.1);
-}
+.card:hover .card-header-icon { transform: rotate(360deg) scale(1.1); }
 .icon-saffron { background: linear-gradient(135deg, #FFF0E6, #FFE0CC); color: var(--saffron); }
 .icon-green { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: var(--green); }
 .icon-blue { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: var(--blue); }
 .icon-purple { background: linear-gradient(135deg, #F3E8FF, #E1BEE7); color: var(--purple); }
 .icon-teal { background: linear-gradient(135deg, #E0F2F1, #B2DFDB); color: var(--teal); }
 .icon-pink { background: linear-gradient(135deg, #FCE4EC, #F8BBD0); color: var(--pink); }
-.card-header h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-.card-body {
-  padding: 24px;
-}
+.card-header h3 { font-size: 1.1rem; font-weight: 700; }
+.card-body { padding: 24px; }
 /* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
 .stat-card {
   background: rgba(255,255,255,0.95);
   backdrop-filter: blur(5px);
@@ -434,7 +313,7 @@ main {
   text-align: center;
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
   border-left: 4px solid var(--saffron);
-  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  transition: all 0.3s;
   animation: cardPop 0.5s ease forwards;
   opacity: 0;
   transform: scale(0.8);
@@ -448,161 +327,26 @@ main {
   60% { transform: scale(1.05); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-.stat-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-}
-.stat-value {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2.2rem;
-  color: var(--saffron);
-}
-.stat-label {
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-/* Form Elements */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.form-group label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-.form-group input,
-.form-group select,
-.form-group textarea {
+.stat-card:hover { transform: translateY(-8px) scale(1.02); }
+.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--saffron); }
+.stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+/* Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.7rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.form-group input, .form-group select, .form-group textarea {
   padding: 12px 14px;
   border: 2px solid rgba(0,0,0,0.1);
   border-radius: 14px;
   font-family: inherit;
   transition: all 0.3s ease;
   background: white;
-  position: relative;
-  overflow: hidden;
 }
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
   outline: none;
   border-color: var(--saffron);
   box-shadow: 0 0 0 4px rgba(255,98,0,0.15);
   transform: translateX(5px) scale(1.01);
-}
-.form-group input:hover,
-.form-group select:hover,
-.form-group textarea:hover {
-  border-color: var(--purple);
-  box-shadow: 0 2px 8px rgba(107,33,165,0.1);
-}
-/* OTP Modal */
-.otp-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(10px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.otp-modal {
-  background: white;
-  border-radius: 32px;
-  padding: 30px;
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  animation: modalFlyIn 0.4s ease;
-}
-.otp-modal h3 {
-  font-size: 1.3rem;
-  margin-bottom: 8px;
-  color: var(--navy);
-}
-.otp-modal p {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-bottom: 20px;
-}
-.otp-boxes {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-.otp-box {
-  width: 50px;
-  height: 55px;
-  text-align: center;
-  font-size: 1.3rem;
-  font-weight: 700;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-family: 'Space Mono', monospace;
-  transition: all 0.2s;
-  background: white;
-}
-.otp-box:focus {
-  border-color: var(--saffron);
-  box-shadow: 0 0 0 3px rgba(255,98,0,0.2);
-  outline: none;
-}
-.otp-resend {
-  font-size: 0.7rem;
-  color: var(--muted);
-  margin-bottom: 20px;
-}
-.otp-resend span {
-  color: var(--saffron);
-  cursor: pointer;
-  font-weight: 700;
-}
-.otp-close {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  margin-top: 10px;
-  font-size: 0.8rem;
-}
-/* Rating Stars */
-.rating-stars {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-.rating-star {
-  font-size: 2.5rem;
-  cursor: pointer;
-  color: #ddd;
-  transition: all 0.2s;
-}
-.rating-star:hover,
-.rating-star.active {
-  color: #FFD700;
-  transform: scale(1.1);
-  text-shadow: 0 0 10px rgba(255,215,0,0.5);
-}
-/* Feedback Card */
-.feedback-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(250,250,247,0.95));
-  border-radius: 20px;
-  padding: 20px;
-  margin-top: 20px;
 }
 /* Mode Tabs */
 .mode-tabs {
@@ -621,25 +365,9 @@ main {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  background: transparent;
-}
-.mode-tab::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,98,0,0.2), transparent);
-  transition: left 0.5s;
-}
-.mode-tab:hover::before {
-  left: 100%;
 }
 .mode-tab.active {
-  background: linear-gradient(135deg, white, #FFF5F0);
+  background: white;
   box-shadow: 0 2px 12px rgba(255,98,0,0.2);
   color: var(--saffron);
   transform: scale(1.02);
@@ -651,12 +379,6 @@ main {
   padding: 20px;
   background: linear-gradient(135deg, rgba(242,238,231,0.8), rgba(255,240,230,0.6));
   text-align: center;
-  transition: all 0.3s;
-  animation: borderPulse 3s infinite;
-}
-@keyframes borderPulse {
-  0%,100% { border-color: rgba(0,0,0,0.1); box-shadow: 0 0 0 0 rgba(255,98,0,0); }
-  50% { border-color: var(--saffron); box-shadow: 0 0 0 5px rgba(255,98,0,0.1); }
 }
 .voice-box textarea {
   width: 100%;
@@ -675,25 +397,6 @@ main {
   cursor: pointer;
   font-size: 2.2rem;
   transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.mic-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-.mic-btn:hover::before { left: 100%; }
-.mic-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  background: linear-gradient(135deg, var(--saffron), var(--saffron2));
 }
 .mic-btn.recording {
   background: linear-gradient(135deg, var(--red), #E53935);
@@ -712,43 +415,15 @@ main {
   cursor: pointer;
   background: linear-gradient(135deg, rgba(242,238,231,0.8), rgba(255,240,230,0.6));
   transition: all 0.3s;
-  animation: dropZonePulse 2s infinite;
-}
-@keyframes dropZonePulse {
-  0%,100% { border-color: rgba(0,0,0,0.1); background: linear-gradient(135deg, rgba(242,238,231,0.8), rgba(255,240,230,0.6)); }
-  50% { border-color: var(--purple); background: linear-gradient(135deg, #F3E8FF, #E1BEE7); }
 }
 .drop-zone:hover {
   border-color: var(--saffron);
   background: linear-gradient(135deg, #FFF0E6, #FFE0CC);
   transform: scale(1.01);
 }
-.thumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-.thumb {
-  position: relative;
-  animation: thumbPop 0.3s ease;
-}
-@keyframes thumbPop {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
-.thumb img {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.1);
-  transition: all 0.3s;
-}
-.thumb img:hover {
-  transform: scale(1.05);
-  border-color: var(--saffron);
-}
+.thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.thumb { position: relative; }
+.thumb img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(0,0,0,0.1); }
 .thumb-del {
   position: absolute;
   top: -8px;
@@ -761,11 +436,6 @@ main {
   border: none;
   cursor: pointer;
   font-size: 12px;
-  transition: all 0.3s;
-}
-.thumb-del:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(198,40,40,0.4);
 }
 /* Location Box */
 .loc-box {
@@ -774,43 +444,28 @@ main {
   border-radius: 20px;
   padding: 18px;
   margin: 20px 0 15px;
-  transition: all 0.3s;
   animation: locationGlow 2s infinite;
 }
 @keyframes locationGlow {
   0%,100% { border-color: var(--teal); box-shadow: 0 0 0 0 rgba(0,128,128,0.2); }
   50% { border-color: #00BCD4; box-shadow: 0 0 0 8px rgba(0,128,128,0.2); }
 }
-.loc-row {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-.loc-info {
-  flex: 1;
-}
-.loc-badge {
-  padding: 5px 12px;
-  border-radius: 30px;
-  font-size: 0.7rem;
+.loc-row { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.loc-info { flex: 1; }
+.loc-badge { padding: 5px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 700; }
+.lb-yes { background: #E8F5E9; color: var(--green); }
+.lb-no { background: rgba(0,0,0,0.05); color: var(--muted); border: 1px solid rgba(0,0,0,0.1); }
+.btn-loc {
+  background: linear-gradient(135deg, var(--teal), #009688);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 40px;
+  cursor: pointer;
   font-weight: 700;
+  transition: all 0.3s;
 }
-.lb-yes {
-  background: linear-gradient(135deg, var(--green3), #C8E6C9);
-  color: var(--green);
-  animation: badgePop 0.5s ease;
-}
-.lb-no {
-  background: rgba(0,0,0,0.05);
-  color: var(--muted);
-  border: 1px solid rgba(0,0,0,0.1);
-}
-@keyframes badgePop {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-/* Buttons */
+.btn-loc:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,128,128,0.3); }
 .btn-primary {
   background: linear-gradient(135deg, var(--saffron), var(--saffron2));
   color: white;
@@ -821,32 +476,13 @@ main {
   cursor: pointer;
   transition: all 0.3s;
   width: 100%;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(255,98,0,0.3);
   animation: btnPulse 2s infinite;
 }
 @keyframes btnPulse {
   0%,100% { box-shadow: 0 4px 15px rgba(255,98,0,0.3); }
   50% { box-shadow: 0 8px 25px rgba(255,98,0,0.5); }
 }
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transition: left 0.5s ease;
-}
-.btn-primary:hover::before { left: 100%; }
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(255,98,0,0.5);
-  background: linear-gradient(135deg, var(--saffron2), #FF4400);
-}
-.btn-primary:active { transform: translateY(2px); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(255,98,0,0.5); }
 .btn-secondary {
   background: linear-gradient(135deg, var(--navy), var(--indigo));
   color: white;
@@ -858,59 +494,12 @@ main {
   transition: all 0.3s;
   width: 100%;
   margin-top: 10px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
-.btn-secondary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-.btn-secondary:hover::before { left: 100%; }
-.btn-secondary:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, var(--purple), #8E24AA);
-  box-shadow: 0 6px 20px rgba(107,33,165,0.4);
-}
-.btn-loc {
-  background: linear-gradient(135deg, var(--teal), #009688);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 40px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-.btn-loc::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-.btn-loc:hover::before { left: 100%; }
-.btn-loc:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,128,128,0.3);
-  background: linear-gradient(135deg, #009688, #004D40);
-}
-.btn-small {
-  width: auto !important;
-  padding: 8px 20px !important;
-}
+.btn-small { width: auto !important; padding: 8px 20px !important; }
+/* Rating Stars */
+.rating-stars { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
+.rating-star { font-size: 2.5rem; cursor: pointer; color: #ddd; transition: all 0.2s; }
+.rating-star:hover, .rating-star.active { color: #FFD700; transform: scale(1.1); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
 /* Success Modal */
 .success-overlay {
   position: fixed;
@@ -921,11 +510,6 @@ main {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeInBack 0.3s ease;
-}
-@keyframes fadeInBack {
-  from { opacity: 0; backdrop-filter: blur(0); }
-  to { opacity: 1; backdrop-filter: blur(10px); }
 }
 .success-modal {
   background: white;
@@ -933,7 +517,7 @@ main {
   padding: 40px;
   max-width: 400px;
   text-align: center;
-  animation: modalFlyIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: modalFlyIn 0.5s ease;
 }
 @keyframes modalFlyIn {
   0% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
@@ -950,9 +534,9 @@ main {
   justify-content: center;
   font-size: 40px;
   margin: 0 auto 20px;
-  animation: iconSpinSuccess 0.6s ease;
+  animation: iconSpin 0.6s ease;
 }
-@keyframes iconSpinSuccess {
+@keyframes iconSpin {
   0% { transform: rotate(0deg) scale(0); }
   50% { transform: rotate(180deg) scale(1.1); }
   100% { transform: rotate(360deg) scale(1); }
@@ -967,11 +551,6 @@ main {
   border-radius: 30px;
   display: inline-block;
   margin: 15px 0;
-  animation: cidPulse 1.5s infinite;
-}
-@keyframes cidPulse {
-  0%,100% { transform: scale(1); background: #FFF0E6; }
-  50% { transform: scale(1.05); background: #FFE0CC; }
 }
 /* Complaint Cards */
 .complaint-card {
@@ -988,26 +567,14 @@ main {
 .complaint-card:nth-child(1) { animation-delay: 0.05s; }
 .complaint-card:nth-child(2) { animation-delay: 0.1s; }
 .complaint-card:nth-child(3) { animation-delay: 0.15s; }
-.complaint-card:nth-child(4) { animation-delay: 0.2s; }
-.complaint-card:nth-child(5) { animation-delay: 0.25s; }
-@keyframes slideInLeft {
-  to { opacity: 1; transform: translateX(0); }
-}
-.complaint-card:hover {
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  transform: translateX(8px) translateY(-2px);
-}
-.complaint-priority {
-  height: 5px;
-  animation: expandWidth 0.8s ease;
-}
+@keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
+.complaint-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.15); transform: translateX(5px) translateY(-2px); }
+.complaint-priority { height: 5px; }
 .priority-critical { background: linear-gradient(90deg, #C62828, #E53935); }
 .priority-high { background: linear-gradient(90deg, #E65100, #FF9800); }
 .priority-medium { background: linear-gradient(90deg, #F9A825, #FFC107); }
 .priority-low { background: linear-gradient(90deg, var(--green), #4CAF50); }
-.complaint-content {
-  padding: 18px;
-}
+.complaint-content { padding: 18px; }
 /* Timeline */
 .timeline-item {
   margin-bottom: 15px;
@@ -1017,12 +584,7 @@ main {
   opacity: 0;
   transform: translateX(-15px);
 }
-.timeline-item:nth-child(1) { animation-delay: 0.1s; }
-.timeline-item:nth-child(2) { animation-delay: 0.2s; }
-.timeline-item:nth-child(3) { animation-delay: 0.3s; }
-@keyframes timelineFade {
-  to { opacity: 1; transform: translateX(0); }
-}
+@keyframes timelineFade { to { opacity: 1; transform: translateX(0); } }
 /* Footer */
 footer {
   background: rgba(11,30,51,0.95);
@@ -1032,11 +594,6 @@ footer {
   text-align: center;
   margin-top: auto;
   border-top: 1px solid rgba(255,255,255,0.05);
-  animation: footerFade 1s ease;
-}
-@keyframes footerFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 /* Alerts */
 .alert {
@@ -1044,93 +601,29 @@ footer {
   border-radius: 14px;
   margin-bottom: 20px;
   display: none;
-  animation: shakeAlert 0.5s ease;
+  animation: shake 0.5s ease;
 }
-@keyframes shakeAlert {
+@keyframes shake {
   0%,100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
   75% { transform: translateX(5px); }
 }
-.alert-error {
-  background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
-  color: #C62828;
-  border-left: 4px solid #C62828;
-}
-.alert-success {
-  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
-  color: #0A7C3E;
-  border-left: 4px solid #0A7C3E;
-}
-/* Department Rows */
-.dept-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  animation: rowFade 0.3s ease forwards;
-  opacity: 0;
-}
-.dept-row:nth-child(1) { animation-delay: 0.05s; }
-.dept-row:nth-child(2) { animation-delay: 0.1s; }
-.dept-row:nth-child(3) { animation-delay: 0.15s; }
-.dept-row:nth-child(4) { animation-delay: 0.2s; }
-.dept-row:nth-child(5) { animation-delay: 0.25s; }
-.dept-row:nth-child(6) { animation-delay: 0.3s; }
-@keyframes rowFade {
-  to { opacity: 1; }
-}
-/* Responsive */
+.alert-error { background: linear-gradient(135deg, #FFEBEE, #FFCDD2); color: #C62828; border-left: 4px solid #C62828; }
+.alert-success { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); color: #0A7C3E; border-left: 4px solid #0A7C3E; }
+.dept-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); animation: rowFade 0.3s ease forwards; opacity: 0; }
+@keyframes rowFade { to { opacity: 1; } }
 @media (max-width: 768px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .hero h1 { font-size: 2rem; }
-  .header-inner { flex-direction: column; gap: 10px; }
   .nav { flex-wrap: wrap; justify-content: center; }
   .nav-item { padding: 10px 16px; font-size: 0.8rem; }
-  .otp-box { width: 40px; height: 45px; font-size: 1rem; }
 }
-@media (max-width: 768px) {
-  .particle { width: 2px !important; height: 2px !important; opacity: 0.4 !important; }
-}
-/* Cursor Fix */
-* { cursor: default; }
-button, a, [onclick], .tab, .nav-item, .btn-primary, .btn-secondary,
-.card, .complaint-card, .dept-card, .stat-card, select, input[type="file"],
-.loc-btn, .mode-btn, .otp-box, label[for], .clickable, .resend-link span,
-.forgot-link a, .nav-tab { cursor: pointer !important; }
-input[type="text"], input[type="tel"], input[type="email"], 
-input[type="password"], input[type="number"], textarea, select { cursor: text !important; }
-input[type="file"] { cursor: pointer !important; }
-* { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-input, textarea, [contenteditable="true"] { -webkit-user-select: text !important; -moz-user-select: text !important; user-select: text !important; }
-@media (max-width: 768px) {
-  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.1s !important; }
-  .particle { animation-duration: 20s !important; animation-iteration-count: infinite !important; }
-  .logo-badge { animation: none !important; }
-  .orb { animation-duration: 30s !important; }
-}
-.animated {
-  animation-play-state: paused !important;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
-.animated.visible {
-  animation-play-state: running !important;
-  opacity: 1;
-  transform: translateY(0);
-}
-.particle { animation-play-state: paused; }
-.particle.visible { animation-play-state: running; }
 </style>
 </head>
 <body>
-<!-- Floating Particles -->
 <script>
-const isMobile = window.innerWidth < 768;
-const particleCount = isMobile ? 8 : 30;
-for(let i = 0; i < particleCount; i++) {
+for(let i = 0; i < 30; i++) {
   let p = document.createElement('div');
   p.className = 'particle';
   p.style.left = Math.random() * 100 + '%';
@@ -1190,7 +683,7 @@ for(let i = 0; i < particleCount; i++) {
     </div>
   </div>
 
-  <!-- SUBMIT PAGE with OTP Verification -->
+  <!-- SUBMIT PAGE - NO OTP BUTTON -->
   <div id="page-submit" class="page">
     <div class="card">
       <div class="card-header"><div class="card-header-icon icon-saffron">📝</div><h3>नई शिकायत दर्ज करें</h3></div>
@@ -1198,12 +691,7 @@ for(let i = 0; i < particleCount; i++) {
         <div id="submitAlert" class="alert"></div>
         <div class="form-grid">
           <div class="form-group"><label>पूरा नाम *</label><input type="text" id="sub-name" placeholder="सुनील कुशवाहा"></div>
-          <div class="form-group"><label>मोबाइल *</label>
-            <div style="display:flex; gap:8px;">
-              <input type="tel" id="sub-mobile" placeholder="90XXXXXXXX" style="flex:1;">
-              <button type="button" class="btn-secondary btn-small" id="sendOtpBtn" onclick="sendComplaintOtp()" style="width: auto; margin:0; padding:8px 16px;">📨 OTP भेजें</button>
-            </div>
-          </div>
+          <div class="form-group"><label>मोबाइल *</label><input type="tel" id="sub-mobile" placeholder="90XXXXXXXX"></div>
           <div class="form-group"><label>ईमेल</label><input type="email" id="sub-email" placeholder="you@example.com"></div>
           <div class="form-group"><label>जिला</label><select id="sub-district"><option>Indore</option><option>Bhopal</option><option>Jabalpur</option><option>Gwalior</option><option>Ujjain</option></select></div>
           <div class="form-group"><label>क्षेत्र</label><input type="text" id="sub-area" placeholder="विजय नगर"></div>
@@ -1230,7 +718,7 @@ for(let i = 0; i < particleCount; i++) {
             <small>JPG, PNG - अधिकतम 5 फोटो</small>
           </div>
           <div class="thumbs" id="photoThumbs"></div>
-          <div class="form-group" style="margin-top: 15px;"><label>फोटो विवरण</label><textarea id="photo-desc" rows="3" placeholder="AI से विश्लेषण करें या मैन्युअल लिखें"></textarea></div>
+          <div class="form-group" style="margin-top:15px;"><label>फोटो विवरण</label><textarea id="photo-desc" rows="3" placeholder="AI से विश्लेषण करें या मैन्युअल लिखें"></textarea></div>
           <button class="btn-secondary" onclick="analyzePhoto()" id="analyzeBtn">🤖 AI से विश्लेषण करें</button>
         </div>
 
@@ -1253,25 +741,10 @@ for(let i = 0; i < particleCount; i++) {
     </div>
   </div>
 
-  <!-- OTP MODAL -->
-  <div id="otpModal" class="otp-overlay">
-    <div class="otp-modal">
-      <h3>📱 OTP सत्यापन</h3>
-      <p id="otpDesc">आपके मोबाइल पर OTP भेजा गया है</p>
-      <div class="otp-boxes">
-        <input class="otp-box" maxlength="1" id="otp0" oninput="otpMove(0)" onkeydown="otpKeyDown(event,0)"> <input class="otp-box" maxlength="1" id="otp1" oninput="otpMove(1)" onkeydown="otpKeyDown(event,1)">
-        <input class="otp-box" maxlength="1" id="otp2" oninput="otpMove(2)" onkeydown="otpKeyDown(event,2)"> <input class="otp-box" maxlength="1" id="otp3" oninput="otpMove(3)" onkeydown="otpKeyDown(event,3)">
-        <input class="otp-box" maxlength="1" id="otp4" oninput="otpMove(4)" onkeydown="otpKeyDown(event,4)"> <input class="otp-box" maxlength="1" id="otp5" oninput="otpMove(5)" onkeydown="otpKeyDown(event,5)">
-      </div>
-      <div class="otp-resend">OTP नहीं आया? <span onclick="resendComplaintOtp()">पुनः भेजें</span></div>
-      <button class="btn-primary" onclick="verifyComplaintOtp()" style="margin-top:10px;">✅ सत्यापित करें</button>
-      <button class="otp-close" onclick="closeOtpModal()">बाद में करें</button>
-    </div>
-  </div>
-
   <!-- TRACK PAGE -->
   <div id="page-track" class="page">
-    <div class="card"><div class="card-header"><div class="card-header-icon icon-purple">🔍</div><h3>शिकायत ट्रैक करें</h3></div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon icon-purple">🔍</div><h3>शिकायत ट्रैक करें</h3></div>
       <div class="card-body">
         <div id="trackAlert" class="alert"></div>
         <div style="display:flex; gap:12px; margin-bottom:20px;"><input type="text" id="trackId" placeholder="GRV-YYMMDD-XXXX" style="flex:1; padding:14px; border:2px solid rgba(0,0,0,0.1); border-radius:16px;"><button class="btn-primary" onclick="trackComplaint()" style="width:auto; padding:14px 24px;">ट्रैक करें</button></div>
@@ -1293,26 +766,24 @@ for(let i = 0; i < particleCount; i++) {
 
   <!-- FEEDBACK PAGE -->
   <div id="page-feedback" class="page">
-    <div class="card"><div class="card-header"><div class="card-header-icon icon-pink">⭐</div><h3>अपनी राय दें</h3></div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon icon-pink">⭐</div><h3>अपनी राय दें</h3></div>
       <div class="card-body">
         <div id="feedbackAlert" class="alert"></div>
         <div class="feedback-card">
-          <div style="text-align:center; margin-bottom:15px;"><p style="font-size:0.9rem; color:var(--text);">GrievAI Portal के बारे में अपनी राय दें</p><p style="font-size:0.7rem; color:var(--muted);">आपकी प्रतिक्रिया हमारे लिए महत्वपूर्ण है</p></div>
+          <div style="text-align:center; margin-bottom:15px;"><p>GrievAI Portal के बारे में अपनी राय दें</p><p style="font-size:0.7rem; color:var(--muted);">आपकी प्रतिक्रिया हमारे लिए महत्वपूर्ण है</p></div>
           <div class="rating-stars" id="ratingStars"><span class="rating-star" data-value="1">★</span><span class="rating-star" data-value="2">★</span><span class="rating-star" data-value="3">★</span><span class="rating-star" data-value="4">★</span><span class="rating-star" data-value="5">★</span></div>
           <div class="form-group" style="margin-top:15px;"><label>आपकी प्रतिक्रिया</label><textarea id="feedbackMsg" rows="4" placeholder="अपनी राय या सुझाव लिखें..."></textarea></div>
           <div class="form-group"><label>आपका नाम (optional)</label><input type="text" id="feedbackName" placeholder="आपका नाम"></div>
           <button class="btn-primary" onclick="submitFeedback()" id="feedbackBtn">⭐ सबमिट करें</button>
-          <div id="feedbackThanks" style="display:none; margin-top:15px; padding:15px; background:linear-gradient(135deg,#E8F5E9,#C8E6C9); border-radius:16px; text-align:center;"><span style="font-size:2rem;">🙏</span><p style="font-weight:700; margin-top:5px;">धन्यवाद!</p><p style="font-size:0.75rem;">आपकी प्रतिक्रिया सफलतापूर्वक प्राप्त हो गई।</p></div>
+          <div id="feedbackThanks" style="display:none; margin-top:15px; padding:15px; background:linear-gradient(135deg,#E8F5E9,#C8E6C9); border-radius:16px; text-align:center;"><span style="font-size:2rem;">🙏</span><p style="font-weight:700; margin-top:5px;">धन्यवाद!</p></div>
         </div>
       </div>
     </div>
-    <div class="card"><div class="card-header"><div class="card-header-icon icon-blue">📊</div><h3>उपयोगकर्ता रेटिंग</h3></div>
-      <div class="card-body"><div style="text-align:center; padding:20px;"><div style="font-size:2.5rem; color:var(--gold);" id="avgRating">0.0</div><div style="font-size:0.8rem; color:var(--muted);">औसत रेटिंग</div><div style="margin-top:10px;"><span id="totalRatings">0</span> <span style="color:var(--muted);">रेटिंग्स</span></div></div></div>
-    </div>
+    <div class="card"><div class="card-header"><div class="card-header-icon icon-blue">📊</div><h3>उपयोगकर्ता रेटिंग</h3></div><div class="card-body"><div style="text-align:center; padding:20px;"><div style="font-size:2.5rem; color:var(--gold);" id="avgRating">0.0</div><div style="font-size:0.8rem; color:var(--muted);">औसत रेटिंग</div><div style="margin-top:10px;"><span id="totalRatings">0</span> <span style="color:var(--muted);">रेटिंग्स</span></div></div></div></div>
   </div>
 </main>
 
-<!-- SUCCESS MODAL -->
 <div id="successModal" class="success-overlay">
   <div class="success-modal">
     <div class="success-icon">✅</div>
@@ -1338,71 +809,6 @@ let isListening = false;
 let userLocation = null;
 let userPhotos = [];
 let selectedRating = 0;
-let complaintMobile = '';
-let complaintOtpVerified = false;
-
-// OTP Functions
-function otpMove(i) {
-  let next = document.getElementById('otp' + (i+1));
-  if(next && document.getElementById('otp'+i).value) next.focus();
-}
-function otpKeyDown(e, i) {
-  if(e.key === 'Backspace' && !document.getElementById('otp'+i).value && i>0) document.getElementById('otp'+(i-1)).focus();
-}
-function getOtpValue() {
-  let otp = '';
-  for(let i=0;i<6;i++) otp += document.getElementById('otp'+i).value || '';
-  return otp;
-}
-function closeOtpModal() { document.getElementById('otpModal').style.display = 'none'; }
-
-async function sendComplaintOtp() {
-  let mobile = document.getElementById('sub-mobile').value.trim();
-  if(!mobile || mobile.length < 10) { showAlert('submitAlert', 'सही मोबाइल नंबर डालें', true); return; }
-  complaintMobile = mobile;
-  let btn = document.getElementById('sendOtpBtn');
-  btn.disabled = true; btn.textContent = '⏳...';
-  try {
-    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: mobile }) });
-    let data = await res.json();
-    if(data.success) {
-      document.getElementById('otpDesc').innerHTML = data.test_mode ? '✅ OTP terminal में print हुआ! Check your terminal window' : 'OTP आपके मोबाइल पर भेज दिया गया है';
-      document.getElementById('otpModal').style.display = 'flex';
-      document.getElementById('otp0').focus();
-      for(let i=0;i<6;i++) document.getElementById('otp'+i).value = '';
-      complaintOtpVerified = false;
-      showAlert('submitAlert', '✅ OTP भेजा गया! Terminal में देखें', false);
-    } else { showAlert('submitAlert', data.error || 'OTP भेजने में समस्या', true); }
-  } catch(e) { showAlert('submitAlert', 'सर्वर कनेक्ट नहीं हो पा रहा', true); }
-  btn.disabled = false; btn.textContent = '📨 OTP भेजें';
-}
-
-async function resendComplaintOtp() {
-  if(!complaintMobile) { showAlert('submitAlert', 'पहले मोबाइल नंबर डालें', true); closeOtpModal(); return; }
-  try {
-    let res = await fetch('/api/otp/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: complaintMobile }) });
-    let data = await res.json();
-    if(data.success) {
-      showAlert('submitAlert', '✅ OTP पुनः भेजा गया! Terminal में देखें', false);
-      for(let i=0;i<6;i++) document.getElementById('otp'+i).value = '';
-      document.getElementById('otp0').focus();
-    } else { showAlert('submitAlert', data.error || 'OTP भेजने में समस्या', true); }
-  } catch(e) { showAlert('submitAlert', 'सर्वर एरर', true); }
-}
-
-async function verifyComplaintOtp() {
-  let otp = getOtpValue();
-  if(otp.length !== 6) { showAlert('submitAlert', '6 अंक OTP डालें', true); return; }
-  try {
-    let res = await fetch('/api/otp/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mobile: complaintMobile, otp: otp }) });
-    let data = await res.json();
-    if(data.success) {
-      complaintOtpVerified = true;
-      closeOtpModal();
-      showAlert('submitAlert', '✅ मोबाइल सत्यापित! अब शिकायत दर्ज करें', false);
-    } else { showAlert('submitAlert', data.error || 'OTP गलत या एक्सपायर', true); }
-  } catch(e) { showAlert('submitAlert', 'सर्वर एरर', true); }
-}
 
 // Rating Stars
 function initRatingStars() {
@@ -1410,7 +816,10 @@ function initRatingStars() {
   stars.forEach(star => {
     star.addEventListener('click', () => {
       selectedRating = parseInt(star.dataset.value);
-      stars.forEach(s => { if(parseInt(s.dataset.value) <= selectedRating) s.classList.add('active'); else s.classList.remove('active'); });
+      stars.forEach(s => {
+        if(parseInt(s.dataset.value) <= selectedRating) s.classList.add('active');
+        else s.classList.remove('active');
+      });
     });
   });
 }
@@ -1420,12 +829,19 @@ async function submitFeedback() {
   const rating = selectedRating;
   const message = document.getElementById('feedbackMsg').value.trim();
   const name = document.getElementById('feedbackName').value.trim() || 'Anonymous';
+  
   if(rating === 0) { showAlert('feedbackAlert', 'कृपया रेटिंग दें', true); return; }
   if(!message) { showAlert('feedbackAlert', 'कृपया अपनी प्रतिक्रिया लिखें', true); return; }
+  
   const btn = document.getElementById('feedbackBtn');
   btn.disabled = true; btn.innerHTML = '⏳ सबमिट हो रहा...';
+  
   try {
-    const res = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rating, message, name }) });
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating, message, name })
+    });
     const data = await res.json();
     if(data.success) {
       document.getElementById('feedbackThanks').style.display = 'block';
@@ -1445,12 +861,20 @@ async function loadRatings() {
   try {
     const res = await fetch('/api/feedback');
     const data = await res.json();
-    if(data.success) { document.getElementById('avgRating').innerHTML = (data.averageRating || 0).toFixed(1); document.getElementById('totalRatings').innerHTML = data.totalRatings || 0; }
+    if(data.success) {
+      document.getElementById('avgRating').innerHTML = (data.averageRating || 0).toFixed(1);
+      document.getElementById('totalRatings').innerHTML = data.totalCount || 0;
+    }
   } catch(e) { console.log('Rating load failed'); }
 }
 
 function goHome() { document.querySelector('.nav-item[data-page="home"]').click(); }
-function doLogout() { localStorage.removeItem('grv_token'); localStorage.removeItem('grv_user'); window.location.href = '/login.html'; }
+
+function doLogout() {
+  localStorage.removeItem('grv_token');
+  localStorage.removeItem('grv_user');
+  window.location.href = '/login.html';
+}
 
 // Navigation
 document.querySelectorAll('.nav-item').forEach(nav => {
@@ -1493,13 +917,29 @@ function startRecording() {
   recognition.lang = 'hi-IN';
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.onstart = () => { isListening = true; document.getElementById('micBtn').classList.add('recording'); document.getElementById('micStatus').innerHTML = '🔴 बोल रहे हैं... रोकने के लिए दबाएं'; };
-  recognition.onresult = (e) => { let text = ''; for(let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript; document.getElementById('voice-text').value = text; };
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').classList.add('recording');
+    document.getElementById('micStatus').innerHTML = '🔴 बोल रहे हैं... रोकने के लिए दबाएं';
+  };
+  recognition.onresult = (e) => {
+    let text = '';
+    for(let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+    document.getElementById('voice-text').value = text;
+  };
   recognition.onerror = () => { stopRecording(); };
   recognition.start();
 }
-function stopRecording() { if(recognition) { recognition.stop(); recognition = null; } isListening = false; document.getElementById('micBtn').classList.remove('recording'); document.getElementById('micStatus').innerHTML = 'माइक दबाएं और बोलें'; }
-document.getElementById('micBtn')?.addEventListener('click', () => { if(isListening) stopRecording(); else startRecording(); });
+function stopRecording() {
+  if(recognition) { recognition.stop(); recognition = null; }
+  isListening = false;
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('micStatus').innerHTML = 'माइक दबाएं और बोलें';
+}
+document.getElementById('micBtn')?.addEventListener('click', () => {
+  if(isListening) stopRecording();
+  else startRecording();
+});
 
 // Photo Upload
 const dropZone = document.getElementById('dropZone');
@@ -1517,9 +957,18 @@ function handleFiles(files) {
   userPhotos = Array.from(files).slice(0,5);
   const thumbsDiv = document.getElementById('photoThumbs');
   thumbsDiv.innerHTML = '';
-  userPhotos.forEach((file, idx) => { const url = URL.createObjectURL(file); thumbsDiv.innerHTML += `<div class="thumb"><img src="${url}"><button class="thumb-del" onclick="removePhoto(${idx})">×</button></div>`; });
+  userPhotos.forEach((file, idx) => {
+    const url = URL.createObjectURL(file);
+    thumbsDiv.innerHTML += `<div class="thumb"><img src="${url}"><button class="thumb-del" onclick="removePhoto(${idx})">×</button></div>`;
+  });
 }
-function removePhoto(idx) { userPhotos.splice(idx,1); const dt = new DataTransfer(); userPhotos.forEach(f => dt.items.add(f)); photoInput.files = dt.files; handleFiles(photoInput.files); }
+function removePhoto(idx) {
+  userPhotos.splice(idx,1);
+  const dt = new DataTransfer();
+  userPhotos.forEach(f => dt.items.add(f));
+  photoInput.files = dt.files;
+  handleFiles(photoInput.files);
+}
 async function analyzePhoto() {
   if(!userPhotos.length) { showAlert('submitAlert', 'पहले फोटो अपलोड करें', true); return; }
   const btn = document.getElementById('analyzeBtn');
@@ -1566,7 +1015,7 @@ function getComplaintText() {
   return document.getElementById('text-complaint').value.trim();
 }
 
-// Submit Complaint with OTP check
+// Submit Complaint - NO OTP REQUIRED
 async function submitComplaint() {
   const name = document.getElementById('sub-name').value.trim();
   const mobile = document.getElementById('sub-mobile').value.trim();
@@ -1576,16 +1025,22 @@ async function submitComplaint() {
   if(!mobile || mobile.length < 10) { showAlert('submitAlert', 'सही मोबाइल डालें', true); return; }
   if(!text) { showAlert('submitAlert', 'शिकायत विवरण भरें', true); return; }
   if(!userLocation) { showAlert('submitAlert', '⚠️ लोकेशन लेना अनिवार्य है!', true); return; }
-  if(!complaintOtpVerified) { showAlert('submitAlert', '⚠️ पहले मोबाइल OTP सत्यापित करें! "OTP भेजें" बटन दबाएं', true); return; }
   
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerHTML = '⏳ दर्ज हो रही है...';
   
   const payload = {
-    citizen_name: name, mobile: mobile, email: document.getElementById('sub-email').value.trim(),
-    raw_text: text, district: document.getElementById('sub-district').value, area: document.getElementById('sub-area').value,
-    latitude: userLocation.lat, longitude: userLocation.lng, location_accuracy: userLocation.acc,
-    input_mode: currentMode, photo_count: userPhotos.length
+    citizen_name: name,
+    mobile: mobile,
+    email: document.getElementById('sub-email').value.trim(),
+    raw_text: text,
+    district: document.getElementById('sub-district').value,
+    area: document.getElementById('sub-area').value,
+    latitude: userLocation.lat,
+    longitude: userLocation.lng,
+    location_accuracy: userLocation.acc,
+    input_mode: currentMode,
+    photo_count: userPhotos.length
   };
   
   try {
@@ -1593,15 +1048,23 @@ async function submitComplaint() {
     const data = await res.json();
     if(data.success) {
       document.getElementById('successCid').innerHTML = data.complaint_id;
-      document.getElementById('successMsg').innerHTML = `आपकी शिकायत ${data.ai_result?.department || 'संबंधित'} विभाग को भेज दी गई है। प्राथमिकता: ${data.ai_result?.priority || 'medium'}`;
+      document.getElementById('successMsg').innerHTML = `आपकी शिकायत ${data.ai?.department || 'संबंधित'} विभाग को भेज दी गई है। प्राथमिकता: ${data.ai?.priority || 'medium'}`;
       document.getElementById('successModal').style.display = 'flex';
       // Reset form
-      document.getElementById('sub-name').value = ''; document.getElementById('sub-email').value = ''; document.getElementById('sub-area').value = '';
-      document.getElementById('voice-text').value = ''; document.getElementById('text-complaint').value = ''; document.getElementById('photo-desc').value = '';
-      userPhotos = []; document.getElementById('photoThumbs').innerHTML = ''; userLocation = null;
-      complaintOtpVerified = false;
-      document.getElementById('locText').innerHTML = 'लोकेशन नहीं ली गई'; document.getElementById('locBadge').innerHTML = '❌ नहीं ली'; document.getElementById('locBadge').className = 'loc-badge lb-no';
-      document.getElementById('locMap').style.display = 'none'; document.getElementById('locBtn').innerHTML = '📍 लोकेशन लें (अनिवार्य)';
+      document.getElementById('sub-name').value = '';
+      document.getElementById('sub-email').value = '';
+      document.getElementById('sub-area').value = '';
+      document.getElementById('voice-text').value = '';
+      document.getElementById('text-complaint').value = '';
+      document.getElementById('photo-desc').value = '';
+      userPhotos = [];
+      document.getElementById('photoThumbs').innerHTML = '';
+      userLocation = null;
+      document.getElementById('locText').innerHTML = 'लोकेशन नहीं ली गई';
+      document.getElementById('locBadge').innerHTML = '❌ नहीं ली';
+      document.getElementById('locBadge').className = 'loc-badge lb-no';
+      document.getElementById('locMap').style.display = 'none';
+      document.getElementById('locBtn').innerHTML = '📍 लोकेशन लें (अनिवार्य)';
       loadHome(); loadDashboard();
     } else { showAlert('submitAlert', data.error || 'सबमिट फेल', true); }
   } catch(e) { showAlert('submitAlert', 'सर्वर एरर: ' + e.message, true); }
@@ -1635,13 +1098,18 @@ async function apiFetch(url, ttl=30000) {
 async function loadHome() {
   const icons = {'Water Supply':'💧','Roads & PWD':'🛣️','Electricity':'⚡','Sanitation':'🗑️','Public Services':'📋','Healthcare':'🏥'};
   const [d, a] = await Promise.all([apiFetch('/api/departments'), apiFetch('/api/analytics')]);
-  try { document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep => `<div class="dept-row"><span>${icons[dep.name]||'🏢'} ${dep.name}</span><span style="color:var(--saffron);font-weight:700;">${dep.officer_name}</span></div>`).join(''); } catch(e) {}
-  try { document.getElementById('stat-total').innerText = a.summary?.total_complaints || 0; document.getElementById('stat-resolved').innerText = a.summary?.resolved_today || 0; document.getElementById('stat-critical').innerText = a.priority_stats?.critical || 0; } catch(e) {}
+  document.getElementById('dept-list').innerHTML = (d.departments || []).map(dep => `<div class="dept-row"><span>${icons[dep.name]||'🏢'} ${dep.name}</span><span style="color:var(--saffron);font-weight:700;">${dep.officer_name}</span></div>`).join('');
+  document.getElementById('stat-total').innerText = a.total || a.summary?.total_complaints || 0;
+  document.getElementById('stat-resolved').innerText = a.resolved || a.summary?.resolved_today || 0;
+  document.getElementById('stat-critical').innerText = a.critical || a.priority_stats?.critical || 0;
 }
 
 async function loadDashboard() {
   const [a, d] = await Promise.all([apiFetch('/api/analytics'), apiFetch('/api/departments')]);
-  try { document.getElementById('dashTotal').innerText = a.summary?.total_complaints || 0; document.getElementById('dashResolved').innerText = a.summary?.resolved_today || 0; document.getElementById('dashCritical').innerText = a.priority_stats?.critical || 0; document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05);"><span>${dep.name}</span><span style="background:linear-gradient(135deg,#FFF0E6,#FFE0CC);padding:4px 12px;border-radius:30px;font-weight:700;">${dep.complaint_count} शिकायतें</span></div>`).join(''); } catch(e) {}
+  document.getElementById('dashTotal').innerText = a.total || a.summary?.total_complaints || 0;
+  document.getElementById('dashResolved').innerText = a.resolved || a.summary?.resolved_today || 0;
+  document.getElementById('dashCritical').innerText = a.critical || a.priority_stats?.critical || 0;
+  document.getElementById('deptStats').innerHTML = (d.departments || []).map(dep => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05);"><span>${dep.name}</span><span style="background:linear-gradient(135deg,#FFF0E6,#FFE0CC);padding:4px 12px;border-radius:30px;font-weight:700;">${dep.complaint_count} शिकायतें</span></div>`).join('');
 }
 
 function showAlert(id, msg, isError) {
@@ -1654,10 +1122,9 @@ function showAlert(id, msg, isError) {
 
 // Intersection Observer for animations
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); else entry.target.classList.remove('visible'); });
+  entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
 }, { threshold: 0.1 });
-document.querySelectorAll('.card, .dept-card, .stat-card, .complaint-card, .section, .form-group, .btn-primary, .alert').forEach(el => { el.classList.add('animated'); observer.observe(el); });
-document.querySelectorAll('.particle').forEach(p => { observer.observe(p); });
+document.querySelectorAll('.card, .stat-card, .complaint-card, .btn-primary').forEach(el => { el.classList.add('animated'); observer.observe(el); });
 
 loadHome();
 </script>
