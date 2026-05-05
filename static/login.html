@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrievAI — Water Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;500&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --water-dark: #020d1a;
+    --water-mid: #050b11a8;
+    --water-blue: #0a3d62;
+    --water-teal: #1a6b8a;
+    --water-light: #4fc3f7;
+    --water-foam: rgba(79, 195, 247, 0.15);
+    --glass-bg: rgba(5, 11, 17, 0.55);
+    --glass-border: rgba(79, 195, 247, 0.25);
+    --text-light: rgba(200, 230, 255, 0.9);
+    --text-dim: rgba(150, 200, 230, 0.6);
+  }
+
+  body {
+    font-family: 'Raleway', sans-serif;
+    background: var(--water-dark);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── ANIMATED WATER BACKGROUND ── */
+  .water-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .water-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 40%, #0a2a4a 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 70%, #062040 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 10%, #0d3b5e 0%, transparent 50%),
+      linear-gradient(180deg, #020d1a 0%, #041525 40%, #020d1a 100%);
+    animation: deepPulse 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes deepPulse {
+    0%   { filter: brightness(1) hue-rotate(0deg); }
+    100% { filter: brightness(1.15) hue-rotate(8deg); }
+  }
+
+  .wave {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    border-radius: 40%;
+    opacity: 0.08;
+  }
+
+  .wave-1 {
+    background: radial-gradient(ellipse, #1a6b8a 0%, transparent 70%);
+    animation: waveRotate 18s linear infinite;
+  }
+  .wave-2 {
+    background: radial-gradient(ellipse, #0a3d62 0%, transparent 65%);
+    animation: waveRotate 25s linear infinite reverse;
+    opacity: 0.06;
+  }
+  .wave-3 {
+    background: radial-gradient(ellipse, #4fc3f7 0%, transparent 60%);
+    animation: waveRotate 35s linear infinite;
+    opacity: 0.04;
+  }
+
+  @keyframes waveRotate {
+    from { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.1); }
+    to   { transform: rotate(360deg) scale(1); }
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(79, 195, 247, 0.15);
+    animation: rippleOut 6s ease-out infinite;
+    pointer-events: none;
+  }
+
+  .ripple-1 { width: 300px; height: 300px; top: 20%; left: 15%; animation-delay: 0s; }
+  .ripple-2 { width: 200px; height: 200px; top: 60%; left: 70%; animation-delay: 2s; }
+  .ripple-3 { width: 400px; height: 400px; top: 40%; left: 45%; animation-delay: 4s; }
+  .ripple-4 { width: 150px; height: 150px; top: 75%; left: 25%; animation-delay: 1s; }
+  .ripple-5 { width: 250px; height: 250px; top: 10%; left: 65%; animation-delay: 3s; }
+
+  @keyframes rippleOut {
+    0%   { transform: scale(0.2); opacity: 0.6; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(79,195,247,0.4), rgba(79,195,247,0.05));
+    border: 1px solid rgba(79, 195, 247, 0.2);
+    animation: floatUp linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-100vh) translateX(30px) scale(0.5); opacity: 0; }
+  }
+
+  .caustic {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 80px,
+        rgba(79,195,247,0.015) 80px,
+        rgba(79,195,247,0.015) 82px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 80px,
+        rgba(79,195,247,0.015) 80px,
+        rgba(79,195,247,0.015) 82px
+      );
+    animation: causticShift 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes causticShift {
+    0%   { transform: scale(1) rotate(0deg); opacity: 0.5; }
+    100% { transform: scale(1.05) rotate(3deg); opacity: 1; }
+  }
+
+  .light-ray {
+    position: absolute;
+    top: 0;
+    width: 3px;
+    height: 70%;
+    background: linear-gradient(180deg, rgba(79,195,247,0.12) 0%, transparent 100%);
+    animation: rayPulse ease-in-out infinite alternate;
+    border-radius: 0 0 50% 50%;
+    filter: blur(4px);
+  }
+
+  .ray-1 { left: 20%; animation-duration: 4s; animation-delay: 0s; }
+  .ray-2 { left: 35%; width: 5px; animation-duration: 6s; animation-delay: 1s; opacity: 0.7; }
+  .ray-3 { left: 55%; animation-duration: 5s; animation-delay: 2s; }
+  .ray-4 { left: 75%; width: 2px; animation-duration: 7s; animation-delay: 0.5s; opacity: 0.5; }
+
+  @keyframes rayPulse {
+    0%   { opacity: 0.3; transform: skewX(-5deg) scaleY(0.8); }
+    100% { opacity: 0.9; transform: skewX(5deg) scaleY(1.1); }
+  }
+
+  /* ── GLASS LOGIN CARD ── */
+  .login-card {
+    position: relative;
+    z-index: 10;
+    width: 420px;
+    max-width: 94vw;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 44px 40px;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.5),
+      0 0 80px rgba(79,195,247,0.06),
+      inset 0 1px 0 rgba(79,195,247,0.15),
+      inset 0 -1px 0 rgba(0,0,0,0.3);
+    animation: cardAppear 1s cubic-bezier(.22,.84,.36,1) both;
+  }
+
+  @keyframes cardAppear {
+    from { opacity: 0; transform: translateY(40px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(79,195,247,0.6), transparent);
+    border-radius: 50%;
+    filter: blur(1px);
+  }
+
+  /* ── HEADER ── */
+  .title {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--water-light);
+    text-align: center;
+    margin-bottom: 32px;
+    text-shadow: 0 0 20px rgba(79,195,247,0.4);
+    animation: titleGlow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes titleGlow {
+    0%   { text-shadow: 0 0 20px rgba(79,195,247,0.3); }
+    100% { text-shadow: 0 0 30px rgba(79,195,247,0.7), 0 0 60px rgba(79,195,247,0.2); }
+  }
+
+  .title small {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    display: block;
+    color: rgba(79,195,247,0.5);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 40px;
+    padding: 4px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: all 0.3s;
+    color: rgba(79,195,247,0.6);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border: none;
+    background: transparent;
+  }
+
+  .tab.active {
+    background: rgba(79,195,247,0.15);
+    color: var(--water-light);
+    box-shadow: 0 0 12px rgba(79,195,247,0.2);
+  }
+
+  /* ── FORM CONTAINERS ── */
+  .form-container {
+    display: none;
+  }
+  .form-container.active {
+    display: block;
+    animation: fadeScale 0.3s ease;
+  }
+  @keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── INPUT FIELDS ── */
+  .field { margin-bottom: 18px; }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: rgba(79, 195, 247, 0.05);
+    border: 1px solid rgba(79, 195, 247, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 13px;
+    color: var(--text-light);
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .field input::placeholder { color: rgba(79, 195, 247, 0.3); }
+  .field input:focus {
+    border-color: rgba(79, 195, 247, 0.6);
+    background: rgba(79, 195, 247, 0.08);
+    box-shadow: 0 0 0 3px rgba(79,195,247,0.08), 0 0 20px rgba(79,195,247,0.1);
+  }
+
+  /* ── BUTTON ── */
+  .btn-signin {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(79, 195, 247, 0.4);
+    border-radius: 8px;
+    padding: 13px;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    color: var(--water-light);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .btn-signin::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(79,195,247,0.1), rgba(26,107,138,0.15));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .btn-signin:hover {
+    border-color: rgba(79, 195, 247, 0.8);
+    box-shadow: 0 0 20px rgba(79,195,247,0.2);
+  }
+  .btn-signin:hover::before { opacity: 1; }
+  .btn-signin:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(79,195,247,0.2);
+    margin-top: 12px;
+  }
+
+  /* ── CHECKBOX ROW ── */
+  .remember-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .remember input {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--water-light);
+    cursor: pointer;
+  }
+  .remember label {
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .forgot-link {
+    font-size: 11px;
+    color: var(--water-light);
+    text-decoration: none;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .forgot-link:hover { opacity: 1; }
+
+  /* ── ALERTS ── */
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    display: none;
+    backdrop-filter: blur(4px);
+  }
+  .alert-error {
+    background: rgba(198,40,40,0.2);
+    color: #ff8a8a;
+    border-left: 3px solid #ff5c5c;
+  }
+  .alert-success {
+    background: rgba(10,124,62,0.2);
+    color: #8bcb9a;
+    border-left: 3px solid #4caf50;
+  }
+
+  /* Info Box */
+  .info-box {
+    background: rgba(21,101,192,0.15);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 11px;
+    color: #90CAF9;
+    border-left: 3px solid #4fc3f7;
+    line-height: 1.5;
+  }
+
+  /* Steps for forgot */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .step {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.08);
+    color: rgba(79,195,247,0.5);
+  }
+  .step.active {
+    background: linear-gradient(135deg, #1a6b8a, #0a3d62);
+    color: white;
+    box-shadow: 0 0 10px rgba(79,195,247,0.4);
+  }
+  .step.done {
+    background: #0A7C3E;
+    color: white;
+  }
+  .step-line {
+    width: 40px;
+    height: 2px;
+    background: rgba(79,195,247,0.2);
+    border-radius: 2px;
+  }
+  .step-line.done { background: #0A7C3E; }
+
+  /* Footer links */
+  .card-footer {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(79, 195, 247, 0.1);
+  }
+  .card-footer a {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .card-footer a:hover { color: var(--water-light); }
+
+  .scan-line {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(79,195,247,0.3), transparent);
+    animation: scan 4s linear infinite;
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+  }
+  @keyframes scan {
+    0%   { top: 0; opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 0.5; }
+    100% { top: 100%; opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- WATER BACKGROUND -->
+<div class="water-bg">
+  <div class="wave wave-1"></div>
+  <div class="wave wave-2"></div>
+  <div class="wave wave-3"></div>
+  <div class="caustic"></div>
+  <div class="light-ray ray-1"></div>
+  <div class="light-ray ray-2"></div>
+  <div class="light-ray ray-3"></div>
+  <div class="light-ray ray-4"></div>
+  <div class="ripple ripple-1"></div>
+  <div class="ripple ripple-2"></div>
+  <div class="ripple ripple-3"></div>
+  <div class="ripple ripple-4"></div>
+  <div class="ripple ripple-5"></div>
+</div>
+
+<!-- LOGIN CARD -->
+<div class="login-card">
+  <div class="scan-line"></div>
+
+  <h1 class="title">GrievAI Portal<br><small>MADHYA PRADESH GOVERNMENT</small></h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tabLoginBtn">🔐 LOGIN</button>
+    <button class="tab" id="tabRegisterBtn">✨ REGISTER</button>
+  </div>
+
+  <!-- LOGIN FORM -->
+  <div id="loginContainer" class="form-container active">
+    <div id="loginAlert" class="alert"></div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <div class="remember-row">
+      <label class="remember"><input type="checkbox" id="rememberCheck"> Remember me</label>
+      <a class="forgot-link" id="forgotBtn">Forgot password?</a>
+    </div>
+    <button class="btn-signin" id="loginBtn">Sign In</button>
+  </div>
+
+  <!-- REGISTER FORM -->
+  <div id="registerContainer" class="form-container">
+    <div id="regAlert" class="alert"></div>
+    <div class="info-box">
+      📧 A verification link will be sent to your email. Click to activate your account.
+    </div>
+    <div class="field"><label>Full Name</label><input type="text" id="regName" placeholder="John Doe"></div>
+    <div class="field"><label>Email address</label><input type="email" id="regEmail" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="••••••••"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="regPassword2" placeholder="••••••••"></div>
+    <button class="btn-signin" id="registerBtn">✨ REGISTER</button>
+  </div>
+
+  <!-- FORGOT PASSWORD FORM -->
+  <div id="forgotContainer" class="form-container">
+    <div id="forgotAlert" class="alert"></div>
+    <div class="steps">
+      <div class="step active" id="step1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" id="step2">2</div>
+    </div>
+    <div id="forgotStep1">
+      <div class="field"><label>Registered Email</label><input type="email" id="forgotEmail" placeholder="you@example.com"></div>
+      <button class="btn-signin" id="sendResetLinkBtn">📨 SEND RESET LINK</button>
+      <button class="btn-signin btn-secondary" id="backToLoginFromForgot">← BACK</button>
+    </div>
+    <div id="forgotStep2" style="display:none">
+      <div class="info-box">
+        ✅ <strong>Reset link has been sent to your email!</strong><br><br>
+        📧 Open your email → 🔗 Click the link → 🔑 Set new password<br><br>
+        ⏱️ The link is valid for 1 hour.
+      </div>
+      <button class="btn-signin" id="goToLoginFromForgot">🔐 GO TO LOGIN</button>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <a id="footerRegisterBtn">✨ Create account</a>
+    <a id="footerLoginBtn">🔐 Sign in</a>
+  </div>
+</div>
+
+<script>
+  // ========== BUBBLES GENERATION ==========
+  const waterBg = document.querySelector('.water-bg');
+  for (let i = 0; i < 25; i++) {
+    const b = document.createElement('div');
+    b.classList.add('bubble');
+    const size = Math.random() * 14 + 4;
+    b.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      left: ${Math.random() * 100}%;
+      bottom: ${Math.random() * -20}%;
+      animation-duration: ${Math.random() * 12 + 8}s;
+      animation-delay: ${Math.random() * 10}s;
+      opacity: ${Math.random() * 0.5 + 0.1};
+    `;
+    waterBg.appendChild(b);
+  }
+
+  // ========== SESSION CHECK ==========
+  if(localStorage.getItem('grv_token')) { window.location.href = '/'; }
+
+  // ========== DOM ELEMENTS ==========
+  const loginContainer = document.getElementById('loginContainer');
+  const registerContainer = document.getElementById('registerContainer');
+  const forgotContainer = document.getElementById('forgotContainer');
+  const tabLogin = document.getElementById('tabLoginBtn');
+  const tabRegister = document.getElementById('tabRegisterBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const registerBtn = document.getElementById('registerBtn');
+  const forgotBtn = document.getElementById('forgotBtn');
+  const sendResetLinkBtn = document.getElementById('sendResetLinkBtn');
+  const backToLoginFromForgot = document.getElementById('backToLoginFromForgot');
+  const goToLoginFromForgot = document.getElementById('goToLoginFromForgot');
+  const footerRegisterBtn = document.getElementById('footerRegisterBtn');
+  const footerLoginBtn = document.getElementById('footerLoginBtn');
+
+  // ========== TAB SWITCHING ==========
+  function showTab(tab) {
+    loginContainer.classList.remove('active');
+    registerContainer.classList.remove('active');
+    forgotContainer.classList.remove('active');
+    tabLogin.classList.remove('active');
+    tabRegister.classList.remove('active');
+
+    if(tab === 'login') {
+      loginContainer.classList.add('active');
+      tabLogin.classList.add('active');
+    } else if(tab === 'register') {
+      registerContainer.classList.add('active');
+      tabRegister.classList.add('active');
+    } else if(tab === 'forgot') {
+      forgotContainer.classList.add('active');
+      tabLogin.classList.add('active');
+      document.getElementById('forgotStep1').style.display = 'block';
+      document.getElementById('forgotStep2').style.display = 'none';
+      document.getElementById('step1').className = 'step active';
+      document.getElementById('step2').className = 'step';
+      document.getElementById('line1').className = 'step-line';
+      document.getElementById('forgotAlert').style.display = 'none';
+    }
+  }
+
+  tabLogin.onclick = () => showTab('login');
+  tabRegister.onclick = () => showTab('register');
+  forgotBtn.onclick = () => showTab('forgot');
+  footerRegisterBtn.onclick = () => showTab('register');
+  footerLoginBtn.onclick = () => showTab('login');
+  backToLoginFromForgot.onclick = () => showTab('login');
+  goToLoginFromForgot.onclick = () => showTab('login');
+
+  // ========== ALERT HELPER ==========
+  function showAlert(containerId, msg, isError) {
+    const el = document.getElementById(containerId);
+    if(el) {
+      el.innerHTML = (isError ? '❌ ' : '✅ ') + msg;
+      el.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+      el.style.display = 'block';
+      if(!isError) setTimeout(() => el.style.display = 'none', 5000);
+    }
+  }
+
+  // ========== LOGIN ==========
+  loginBtn.onclick = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw = document.getElementById('loginPassword').value;
+    if(!email) { showAlert('loginAlert','Please enter your email',true); return; }
+    if(!pw) { showAlert('loginAlert','Please enter your password',true); return; }
+    try {
+      const res = await fetch('/api/auth/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: pw })
+      });
+      const data = await res.json();
+      if(data.success) {
+        localStorage.setItem('grv_user', JSON.stringify({ name: data.name, email }));
+        localStorage.setItem('grv_token', 'logged_in');
+        showAlert('loginAlert','Login successful! Redirecting...',false);
+        setTimeout(() => window.location.href = '/', 1000);
+      } else {
+        showAlert('loginAlert', data.error || 'Invalid credentials', true);
+      }
+    } catch(e) { showAlert('loginAlert','Server error',true); }
+  };
+
+  // ========== REGISTER ==========
+  registerBtn.onclick = async () => {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pw = document.getElementById('regPassword').value;
+    const pw2 = document.getElementById('regPassword2').value;
+    if(!name) { showAlert('regAlert','Please enter your name',true); return; }
+    if(!email) { showAlert('regAlert','Please enter your email',true); return; }
+    if(!pw || pw.length < 6) { showAlert('regAlert','Password must be 6+ characters',true); return; }
+    if(pw !== pw2) { showAlert('regAlert','Passwords do not match',true); return; }
+    try {
+      const res = await fetch('/api/auth/register', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, email, password: pw })
+      });
+      const data = await res.json();
+      if(data.success) {
+        showAlert('regAlert', data.message || 'Registration successful! Please check your email.', false);
+        document.getElementById('regName').value = '';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regPassword').value = '';
+        document.getElementById('regPassword2').value = '';
+        setTimeout(() => showTab('login'), 2000);
+      } else {
+        showAlert('regAlert', data.error || 'Registration failed', true);
+      }
+    } catch(e) { showAlert('regAlert','Server error',true); }
+  };
+
+  // ========== FORGOT PASSWORD ==========
+  sendResetLinkBtn.onclick = async () => {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if(!email) { showAlert('forgotAlert','Please enter your registered email',true); return; }
+    sendResetLinkBtn.disabled = true;
+    sendResetLinkBtn.innerHTML = '⏳ Sending...';
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if(data.success) {
+        document.getElementById('forgotStep1').style.display = 'none';
+        document.getElementById('forgotStep2').style.display = 'block';
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('done');
+        document.getElementById('line1').classList.add('done');
+        document.getElementById('step2').classList.add('active');
+        showAlert('forgotAlert', data.message || 'Reset link sent! Check your email.', false);
+      } else {
+        showAlert('forgotAlert', data.error || 'Failed to send reset link', true);
+      }
+    } catch(e) { showAlert('forgotAlert','Server error',true); }
+    sendResetLinkBtn.disabled = false;
+    sendResetLinkBtn.innerHTML = '📨 SEND RESET LINK';
+  };
+</script>
+</body>
+</html>

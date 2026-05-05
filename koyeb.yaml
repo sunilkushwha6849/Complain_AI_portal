@@ -1,0 +1,29 @@
+name: grievai-portal
+
+services:
+  - name: grievai-web
+    type: web
+    instance_type: free
+    regions:
+      - fra  # Frankfurt — India ke liye nearest free region
+    git:
+      branch: main
+    build:
+      builder: buildpack
+      build_command: pip install -r requirements.txt
+    run:
+      command: gunicorn app:app --bind 0.0.0.0:$PORT --workers 4 --threads 2 --worker-class gthread --timeout 120
+    ports:
+      - port: 8000
+        protocol: http
+    env:
+      - key: SECRET_KEY
+        value: "grievai-secret-2024-koyeb"
+      - key: RESEND_API_KEY
+        value: ""        # resend.com se API key daalo
+      - key: ALERT_EMAILS
+        value: ""        # officer emails daalo
+      - key: APP_URL
+        value: ""        # Koyeb deploy ke baad URL yahan daalo
+      - key: DATABASE_URL
+        value: ""        # Neon/Supabase PostgreSQL URL daalo
