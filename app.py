@@ -423,6 +423,125 @@ def health():
     return jsonify({'status': 'ok', 'version': '3.3',
                     'db': 'PostgreSQL' if USE_POSTGRES else 'SQLite'})
 
+# ─── FORCE CREATE TABLES FUNCTION ────────────────────────────────────────────
+def ensure_tables():
+    """Force create all tables if they don't exist"""
+    try:
+        conn = get_conn()
+        
+        # Check if citizens table exists
+        cursor = qexec(conn, "SELECT name FROM sqlite_master WHERE type='table' AND name='citizens'")
+        if not cursor.fetchone():
+            print("[DB] Creating tables...")
+            
+            # Create all tables
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS citizens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    mobile TEXT UNIQUE NOT NULL,
+                    name TEXT,
+                    email TEXT,
+                    password_hash TEXT,
+                    verified INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT (datetime('now')),
+                    last_login TEXT
+                )
+            """)
+            
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS otp_verifications (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    mobile TEXT NOT NULL,
+                    otp TEXT NOT NULL,
+                    verified INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT (datetime('now')),
+                    expires_at TEXT NOT NULL
+                )
+            """)
+            
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS complaints (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    complaint_id TEXT UNIQUE NOT NULL,
+                    citizen_name TEXT NOT NULL,
+                    mobile TEXT NOT NULL,
+                    mobile_verified INTEGER DEFAULT 0,
+                    district TEXT,
+                    area TEXT,
+                    language TEXT DEFAULT 'en',
+                    raw_text TEXT NOT NULL,
+                    department TEXT,
+                    category TEXT,
+                    priority TEXT DEFAULT 'medium',
+                    status TEXT DEFAULT 'open',
+                    ai_confidence REAL DEFAULT 0.0,
+                    ai_summary TEXT,
+                    eta_days TEXT,
+                    officer_name TEXT,
+                    dept_full TEXT,
+                    latitude REAL,
+                    longitude REAL,
+                    location_accuracy REAL,
+                    input_mode TEXT DEFAULT 'text',
+                    photo_count INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT (datetime('now')),
+                    updated_at TEXT DEFAULT (datetime('now'))
+                )
+            """)
+            
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS timeline_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    complaint_id TEXT NOT NULL,
+                    event_title TEXT NOT NULL,
+                    event_desc TEXT,
+                    event_time TEXT DEFAULT (datetime('now')),
+                    status TEXT DEFAULT 'done'
+                )
+            """)
+            
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS departments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    short_name TEXT NOT NULL,
+                    officer_name TEXT,
+                    contact TEXT,
+                    complaint_count INTEGER DEFAULT 0
+                )
+            """)
+            
+            qexec(conn, """
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    rating INTEGER NOT NULL,
+                    message TEXT NOT NULL,
+                    user_name TEXT DEFAULT 'Anonymous',
+                    created_at TEXT DEFAULT (datetime('now'))
+                )
+            """)
+            
+            # Insert default departments
+            depts = [
+                ('Water Supply', 'water', 'Er. Suresh Patel', '+91-731-2700100', 0),
+                ('Roads & PWD', 'roads', 'EE Rakesh Dubey', '+91-731-2700200', 0),
+                ('Electricity', 'electricity', 'Er. Anil Sharma', '+91-731-2700300', 0),
+                ('Sanitation', 'sanitation', 'Sanitation Inspector', '+91-731-2700400', 0),
+                ('Public Services', 'services', 'Ward Officer', '+91-731-2700500', 0),
+                ('Healthcare', 'healthcare', 'CMO Dr. Priya Sharma', '+91-731-2700600', 0)
+            ]
+            for dept in depts:
+                qexec(conn, "INSERT OR IGNORE INTO departments (name, short_name, officer_name, contact, complaint_count) VALUES (?, ?, ?, ?, ?)", dept)
+            
+            conn.commit()
+            print("[DB] ✅ All tables created successfully!")
+        else:
+            print("[DB] ✅ Tables already exist")
+        
+        conn.close()
+    except Exception as e:
+        print(f"[DB] Error ensuring tables: {e}")
+
 # ─── AUTH ROUTES (COMPLETE) ───────────────────────────────────────────────────
 
 @app.route('/api/auth/register', methods=['POST'])
@@ -626,6 +745,7 @@ if __name__ == '__main__':
     print("  Email: Gmail SMTP (Works for any email)")
     print("="*50)
     init_db()
+    ensure_tables()  # ← Force create tables if missing
     port = int(os.environ.get('PORT', 10000))
     print(f"\n✅ Server: http://localhost:{port}\n")
     app.run(host='0.0.0.0', port=port, debug=False)
