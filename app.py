@@ -429,12 +429,10 @@ def ensure_tables():
     try:
         conn = get_conn()
         
-        # Check if citizens table exists
         cursor = qexec(conn, "SELECT name FROM sqlite_master WHERE type='table' AND name='citizens'")
         if not cursor.fetchone():
             print("[DB] Creating tables...")
             
-            # Create all tables
             qexec(conn, """
                 CREATE TABLE IF NOT EXISTS citizens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -521,7 +519,6 @@ def ensure_tables():
                 )
             """)
             
-            # Insert default departments
             depts = [
                 ('Water Supply', 'water', 'Er. Suresh Patel', '+91-731-2700100', 0),
                 ('Roads & PWD', 'roads', 'EE Rakesh Dubey', '+91-731-2700200', 0),
@@ -542,7 +539,7 @@ def ensure_tables():
     except Exception as e:
         print(f"[DB] Error ensuring tables: {e}")
 
-# ─── AUTH ROUTES (COMPLETE) ───────────────────────────────────────────────────
+# ─── AUTH ROUTES ─────────────────────────────────────────────────────────────
 
 @app.route('/api/auth/register', methods=['POST'])
 def email_register():
@@ -676,7 +673,7 @@ def forgot_password():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-# ========== RESET PASSWORD ENDPOINT ==========
+# ========== RESET PASSWORD ENDPOINT - FIXED ==========
 @app.route('/api/auth/reset-password', methods=['POST'])
 def reset_password():
     try:
@@ -685,19 +682,26 @@ def reset_password():
         token = data.get('token', '').strip()
         new_password = data.get('new_password', '').strip()
 
+        print(f"[RESET] Email: {email}, Token: {token[:20]}...")
+
         if not email or not token or not new_password:
             return jsonify({'success': False, 'error': 'सभी फील्ड भरें'}), 400
         if len(new_password) < 6:
             return jsonify({'success': False, 'error': 'Password कम से कम 6 अक्षर'}), 400
 
         conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s", (email, token))
+        
+        # Check in otp_verifications table
+        cur = qexec(conn, "SELECT * FROM otp_verifications WHERE mobile = %s AND otp = %s AND verified = 0", (email, token))
         row = to_dict(cur, cur.fetchone())
+
+        print(f"[RESET] Row found: {row is not None}")
 
         if not row:
             conn.close()
             return jsonify({'success': False, 'error': 'Invalid या Expired link'}), 400
 
+        # Check expiry
         expires_str = row['expires_at']
         if isinstance(expires_str, str):
             expires = datetime.strptime(expires_str[:19], '%Y-%m-%d %H:%M:%S')
@@ -708,15 +712,20 @@ def reset_password():
             conn.close()
             return jsonify({'success': False, 'error': 'Link expire हो गया है'}), 400
 
+        # Update password
         pw_hash = hash_password(new_password)
         qexec(conn, "UPDATE citizens SET password_hash = %s WHERE email = %s", (pw_hash, email))
-        qexec(conn, "DELETE FROM otp_verifications WHERE mobile = %s", (email,))
+        
+        # Mark OTP as verified
+        qexec(conn, "UPDATE otp_verifications SET verified = 1 WHERE mobile = %s AND otp = %s", (email, token))
+        
         conn.commit()
         conn.close()
 
+        print(f"[RESET] ✅ Password updated for {email}")
         return jsonify({'success': True, 'message': 'पासवर्ड सफलतापूर्वक बदल गया! अब लॉगिन करें।'})
     except Exception as e:
-        print(f"[RESET PASSWORD ERROR] {e}")
+        print(f"[RESET ERROR] {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -745,7 +754,7 @@ if __name__ == '__main__':
     print("  Email: Gmail SMTP (Works for any email)")
     print("="*50)
     init_db()
-    ensure_tables()  # ← Force create tables if missing
+    ensure_tables()
     port = int(os.environ.get('PORT', 10000))
     print(f"\n✅ Server: http://localhost:{port}\n")
     app.run(host='0.0.0.0', port=port, debug=False)
