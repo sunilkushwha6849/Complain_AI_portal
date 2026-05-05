@@ -1,7 +1,7 @@
 """
 GrievAI Portal v3.3 — Main Flask Server
 Supports SQLite (local) + PostgreSQL (Railway)
-Complete Auth System with Reset Password
+Email: Gmail SMTP - Works for any email address
 """
 import os
 import uuid
@@ -11,6 +11,9 @@ import hashlib
 import secrets
 import threading
 import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -29,25 +32,35 @@ CORS(app)
 SECRET_KEY = os.environ.get('SECRET_KEY', 'grievai-secret-2024')
 app.secret_key = SECRET_KEY
 
-# ─── Resend Email ────────────────────────────────────────────────────────────
+# ─── EMAIL CONFIG - GMAIL SMTP (Works for any email) ─────────────────────────
+GMAIL_USER = "kushwahasunil6341@gmail.com"
+GMAIL_PASSWORD = "cokt injj govc lvog"  # App Password
+
+def send_email(to, subject, html):
+    """Send email using Gmail SMTP - Works for ANY email address"""
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = GMAIL_USER
+        msg["To"] = to
+        msg.attach(MIMEText(html, "html"))
+        
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(GMAIL_USER, GMAIL_PASSWORD.replace(" ", ""))
+        server.sendmail(GMAIL_USER, to, msg.as_string())
+        server.quit()
+        
+        print(f"[EMAIL] ✅ Sent to {to}")
+        return True
+    except Exception as e:
+        print(f"[EMAIL] ❌ Failed: {e}")
+        return False
+
+# ─── Resend Email (Legacy - Not used) ────────────────────────────────────────
 RESEND_API_KEY   = os.environ.get('RESEND_API_KEY', '')
 ALERT_EMAILS     = [e.strip() for e in os.environ.get('ALERT_EMAILS', '').split(',') if e.strip()]
 APP_URL          = os.environ.get('APP_URL', 'http://localhost:8000')
-
-def send_email(to, subject, html):
-    if not RESEND_API_KEY:
-        print(f"[EMAIL TEST] To: {to}\nSubject: {subject}")
-        return True
-    try:
-        import requests as req
-        r = req.post('https://api.resend.com/emails',
-            headers={'Authorization': f'Bearer {RESEND_API_KEY}', 'Content-Type': 'application/json'},
-            json={'from': 'GrievAI Portal <onboarding@resend.dev>', 'to': [to], 'subject': subject, 'html': html},
-            timeout=10)
-        return r.status_code == 200
-    except Exception as e:
-        print(f"[EMAIL ERROR] {e}")
-        return False
 
 # ─── 2Factor OTP ─────────────────────────────────────────────────────────────
 def send_sms(to, body):
@@ -444,11 +457,12 @@ def email_register():
         verify_url = f"{APP_URL}/api/auth/verify-email?token={token}&email={email}"
         send_email(email, 'GrievAI — Email Verify करें', f"""
         <h2>नमस्ते {name}! 🙏</h2>
+        <p>GrievAI Portal पर Register करने के लिए धन्यवाद!</p>
         <a href="{verify_url}">✅ Email Verify करें</a>
         <p>यह link 24 घंटे valid है।</p>
         """)
 
-        return jsonify({'success': True, 'message': 'Verification email भेज दिया गया!'})
+        return jsonify({'success': True, 'message': 'Verification email भेज दिया गया! Check your email.'})
     except Exception as e:
         print(f"[EMAIL REGISTER ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -497,7 +511,7 @@ def email_login():
 
         if not row.get('verified'):
             conn.close()
-            return jsonify({'success': False, 'error': 'Email verify नहीं है!'}), 401
+            return jsonify({'success': False, 'error': 'Email verify नहीं है! Email खोलें और link click करें'}), 401
 
         qexec(conn, "UPDATE citizens SET last_login = %s WHERE email = %s",
               (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), email))
@@ -537,7 +551,7 @@ def forgot_password():
             <p>यह link 1 घंटे valid है।</p>
             """)
 
-        return jsonify({'success': True, 'message': 'Reset link भेज दिया गया!'})
+        return jsonify({'success': True, 'message': 'Reset link भेज दिया गया! Check your email.'})
     except Exception as e:
         print(f"[FORGOT ERROR] {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -609,6 +623,7 @@ if __name__ == '__main__':
     print("\n" + "="*50)
     print("  GrievAI Portal v3.3")
     print(f"  DB: {'PostgreSQL' if USE_POSTGRES else 'SQLite'}")
+    print("  Email: Gmail SMTP (Works for any email)")
     print("="*50)
     init_db()
     port = int(os.environ.get('PORT', 10000))
