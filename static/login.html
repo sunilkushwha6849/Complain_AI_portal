@@ -150,30 +150,37 @@ body {
       <div style="text-align:center;font-size:0.85rem;">पहले से Account है? <a onclick="showTab('login')" style="color:var(--saffron);cursor:pointer;font-weight:800">🔐 Login करें</a></div>
     </div>
 
-    <!-- FORGOT PASSWORD PANEL -->
+    <!-- FORGOT PASSWORD PANEL - FIXED -->
     <div id="forgotPanel" class="panel">
       <h2>पासवर्ड रीसेट 🔄</h2>
       <p class="panel-sub">Email पर Reset Link भेजा जाएगा</p>
       <div id="forgotAlert" class="alert"></div>
       <div class="steps">
-        <div class="step active" id="fstep1">1</div>
-        <div class="step-line" id="fline1"></div>
-        <div class="step" id="fstep2">2</div>
+        <div class="step active" id="step1">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step" id="step2">2</div>
       </div>
+      
+      <!-- STEP 1: Email -->
       <div id="forgotStep1">
         <div class="input-group">
           <label>📧 Registered Email</label>
           <div class="input-wrapper"><input type="email" id="forgotEmail" placeholder="your@email.com"/></div>
         </div>
         <button class="btn-primary" onclick="sendResetLink()">📨 Reset Link भेजें</button>
+        <button class="btn-secondary" onclick="showTab('login')" style="margin-top:12px;">← वापस</button>
       </div>
+      
+      <!-- STEP 2: Success Message -->
       <div id="forgotStep2" style="display:none">
         <div class="info-box">
-          ✅ Reset link आपकी email पर भेज दिया गया है!<br/>
-          Email खोलें → Link click करें → नया Password डालें
+          ✅ <strong>Reset link आपकी email पर भेज दिया गया है!</strong><br/><br/>
+          📧 Email खोलें → 🔗 Link पर click करें → 🔑 नया Password डालें<br/><br/>
+          ⏱️ Link 1 घंटे के लिए valid है।
         </div>
-        <button class="btn-secondary" onclick="showTab('login')">← Login पर वापस जाएं</button>
+        <button class="btn-primary" onclick="showTab('login')">🔐 Login पर जाएं</button>
       </div>
+      
       <div class="divider"></div>
       <div style="text-align:center"><a onclick="showTab('login')" style="color:var(--saffron);cursor:pointer;font-weight:700">← Login पर वापस जाएं</a></div>
     </div>
@@ -186,22 +193,37 @@ body {
 if(localStorage.getItem("grv_token")) {
   window.location.href = "/";
 }
+
 function showTab(name) {
   ["login","register","forgot"].forEach(p => {
-    document.getElementById(p+"Panel").classList.remove("active");
+    let panel = document.getElementById(p+"Panel");
+    if(panel) panel.classList.remove("active");
   });
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(name+"Panel").classList.add("active");
-  if(name==="login") document.querySelector(".tab:first-child").classList.add("active");
-  else if(name==="register") document.querySelector(".tab:last-child").classList.add("active");
+  let targetPanel = document.getElementById(name+"Panel");
+  if(targetPanel) targetPanel.classList.add("active");
+  if(name==="login") document.querySelector(".tab:first-child")?.classList.add("active");
+  else if(name==="register") document.querySelector(".tab:last-child")?.classList.add("active");
+  
+  // Reset forgot panel to step 1 when opening
+  if(name === "forgot") {
+    document.getElementById("forgotStep1").style.display = "block";
+    document.getElementById("forgotStep2").style.display = "none";
+    document.getElementById("step1").className = "step active";
+    document.getElementById("step2").className = "step";
+    document.getElementById("line1").className = "step-line";
+    document.getElementById("forgotEmail").value = "";
+    document.getElementById("forgotAlert").style.display = "none";
+  }
 }
 
 function showAlert(id, msg, isError) {
   let el = document.getElementById(id);
+  if(!el) return;
   el.innerHTML = (isError ? "❌ " : "✅ ") + msg;
   el.className = "alert " + (isError ? "alert-error" : "alert-success");
   el.style.display = "block";
-  if(!isError) setTimeout(() => el.style.display="none", 6000);
+  if(!isError) setTimeout(() => el.style.display = "none", 6000);
 }
 
 // LOGIN
@@ -244,21 +266,27 @@ async function doRegister() {
     });
     let data = await res.json();
     if(data.success) {
-      showAlert("regAlert", data.message || "Email verify करें!", false);
-      document.getElementById("regName").value="";
-      document.getElementById("regEmail").value="";
-      document.getElementById("regPassword").value="";
-      document.getElementById("regPassword2").value="";
+      showAlert("regAlert", data.message || "✅ Register सफल! Email verify करें!", false);
+      document.getElementById("regName").value = "";
+      document.getElementById("regEmail").value = "";
+      document.getElementById("regPassword").value = "";
+      document.getElementById("regPassword2").value = "";
     } else {
       showAlert("regAlert", data.error || "Registration failed", true);
     }
   } catch(e) { showAlert("regAlert","Server error",true); }
 }
 
-// FORGOT PASSWORD
+// FORGOT PASSWORD - FIXED
 async function sendResetLink() {
   let email = document.getElementById("forgotEmail").value.trim();
   if(!email) { showAlert("forgotAlert","Email डालें",true); return; }
+  
+  let btn = event.target;
+  let originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "⏳ भेज रहा है...";
+  
   try {
     let res = await fetch("/api/auth/forgot-password", {
       method:"POST", headers:{"Content-Type":"application/json"},
@@ -266,15 +294,21 @@ async function sendResetLink() {
     });
     let data = await res.json();
     if(data.success) {
-      document.getElementById("forgotStep1").style.display="none";
-      document.getElementById("forgotStep2").style.display="block";
-      document.getElementById("fstep1").classList.replace("active","done");
-      document.getElementById("fline1").classList.add("done");
-      document.getElementById("fstep2").classList.add("active");
+      // Go to step 2
+      document.getElementById("forgotStep1").style.display = "none";
+      document.getElementById("forgotStep2").style.display = "block";
+      document.getElementById("step1").className = "step done";
+      document.getElementById("line1").className = "step-line done";
+      document.getElementById("step2").className = "step active";
+      showAlert("forgotAlert", data.message || "Reset link email पर भेज दिया गया!", false);
     } else {
-      showAlert("forgotAlert", data.error || "Error", true);
+      showAlert("forgotAlert", data.error || "Error sending reset link", true);
     }
-  } catch(e) { showAlert("forgotAlert","Server error",true); }
+  } catch(e) {
+    showAlert("forgotAlert", "Server error. Try again.", true);
+  }
+  btn.disabled = false;
+  btn.innerHTML = originalText;
 }
 </script>
 </body>
