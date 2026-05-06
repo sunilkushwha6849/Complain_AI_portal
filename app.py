@@ -6,6 +6,7 @@ GrievAI Production Server v3.2.2
 - FIXED: %s vs ? placeholder for SQLite/PostgreSQL
 - FIXED: to_dict None check
 - FIXED: otp LIKE query
+- FIXED: Reset URL ab reset-password.html pe jaayega (login.html nahi)
 """
 import os, random, string, threading, requests, traceback, hashlib, secrets
 from datetime import datetime, timedelta
@@ -445,7 +446,8 @@ def send_verification_email(email, name, token):
         print(f"[EMAIL] ❌ Verification email error: {e}")
 
 def send_reset_email(email, name, token):
-    reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={token}"
+    # FIXED: reset URL ab reset-password.html pe jaayega
+    reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/reset-password.html?token={token}&email={email}"
     if not USE_EMAIL:
         print(f"\n  [EMAIL TEST] Password reset link for {email}:\n  {reset_url}\n")
         return True
@@ -479,7 +481,6 @@ def auth_register():
 
     if not name or not email or not pw:
         return err("Naam, email aur password required hain।")
-    # ── STRICT email format check ──
     if "@" not in email or "." not in email.split("@")[-1] or len(email.split("@")[0]) < 1:
         return err("Sahi email address dalein। (example: name@gmail.com)")
     if len(pw) < 6:
@@ -492,12 +493,10 @@ def auth_register():
         fetched = cur.fetchone()
         row = dict(fetched) if fetched else None
 
-        # ── Already verified → login karo ──
         if row and row.get("verified") and str(row.get("verified")) not in ("0", "False", "false"):
             conn.close()
             return err("Yeh email already registered aur verified hai। Login karein।")
 
-        # ── Registered but not verified → resend link, password update karo ──
         if row and (not row.get("verified") or str(row.get("verified")) in ("0", "False", "false")):
             if USE_POSTGRES:
                 qexec(conn, "UPDATE citizens SET name=%s, password_hash=%s WHERE email=%s", (name, pw_hash, email))
@@ -513,7 +512,6 @@ def auth_register():
                 "needs_verification": True
             })
 
-        # ── Bilkul naya user ──
         if USE_POSTGRES:
             qexec(conn, "INSERT INTO citizens(email,name,password_hash,verified) VALUES(%s,%s,%s,FALSE)", (email, name, pw_hash))
         else:
@@ -579,7 +577,6 @@ def auth_login():
         if row["password_hash"] != hash_pw(pw):
             return err("Password galat hai। Dobara try karein।")
 
-        # ── FIX: Verified nahi toh login band — verification email bhejo ──
         verified = row.get("verified")
         if not verified or str(verified) in ("0", "False", "false"):
             name = row.get("name", "")
@@ -615,8 +612,9 @@ def auth_forgot():
     rtok = make_token(email)
     save_reset_token(email, rtok, "reset")
     threading.Thread(target=send_reset_email, args=(email, row.get("name",""), rtok), daemon=True).start()
+    # FIXED: Test mode ke liye bhi reset URL sahi hai
     if not USE_EMAIL:
-       reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/reset-password.html?token={rtok}&email={email}"
+        reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/reset-password.html?token={rtok}&email={email}"
         print(f"\n  [TEST] Password reset link:\n  {reset_url}\n")
     return jsonify({"success": True, "message": "Password reset link aapke email pe bheja gaya! Inbox check karein।"})
 
