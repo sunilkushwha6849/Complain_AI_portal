@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GrievAI — Water Login</title>
+<title>GrievAI — Login | MP Government</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;500&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --water-dark: #020d1a;
     --water-light: #4fc3f7;
@@ -15,269 +14,59 @@
     --glass-border: rgba(79, 195, 247, 0.25);
     --text-dim: rgba(150, 200, 230, 0.6);
   }
-
-  body {
-    font-family: 'Raleway', sans-serif;
-    background: var(--water-dark);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-  }
-
-  /* WATER BACKGROUND */
-  .water-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .water-bg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 30% 40%, #0a2a4a 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 70%, #062040 0%, transparent 55%),
-                linear-gradient(180deg, #020d1a 0%, #041525 40%, #020d1a 100%);
-    animation: deepPulse 8s ease-in-out infinite alternate;
-  }
-  @keyframes deepPulse {
-    0% { filter: brightness(1); }
-    100% { filter: brightness(1.15); }
-  }
-
-  .wave {
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
-    border-radius: 40%;
-    opacity: 0.08;
-  }
+  body { font-family: 'Raleway', sans-serif; background: var(--water-dark); min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  .water-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+  .water-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, #0a2a4a 0%, transparent 60%), radial-gradient(ellipse at 70% 70%, #062040 0%, transparent 55%), linear-gradient(180deg, #020d1a 0%, #041525 40%, #020d1a 100%); animation: deepPulse 8s ease-in-out infinite alternate; }
+  @keyframes deepPulse { 0% { filter: brightness(1); } 100% { filter: brightness(1.15); } }
+  .wave { position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; border-radius: 40%; opacity: 0.08; }
   .wave-1 { background: radial-gradient(ellipse, #1a6b8a 0%, transparent 70%); animation: waveRotate 18s linear infinite; }
   .wave-2 { background: radial-gradient(ellipse, #0a3d62 0%, transparent 65%); animation: waveRotate 25s linear infinite reverse; opacity: 0.06; }
-  @keyframes waveRotate {
-    from { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.1); }
-    to { transform: rotate(360deg) scale(1); }
-  }
-
-  .ripple {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(79, 195, 247, 0.15);
-    animation: rippleOut 6s ease-out infinite;
-    pointer-events: none;
-  }
+  @keyframes waveRotate { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } to { transform: rotate(360deg) scale(1); } }
+  .ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(79, 195, 247, 0.15); animation: rippleOut 6s ease-out infinite; pointer-events: none; }
   .ripple-1 { width: 300px; height: 300px; top: 20%; left: 15%; }
   .ripple-2 { width: 200px; height: 200px; top: 60%; left: 70%; animation-delay: 2s; }
-  @keyframes rippleOut {
-    0% { transform: scale(0.2); opacity: 0.6; }
-    100% { transform: scale(2.5); opacity: 0; }
-  }
-
-  .bubble {
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(79,195,247,0.4), rgba(79,195,247,0.05));
-    border: 1px solid rgba(79, 195, 247, 0.2);
-    animation: floatUp linear infinite;
-    pointer-events: none;
-  }
-  @keyframes floatUp {
-    0% { transform: translateY(0) scale(1); opacity: 0; }
-    10% { opacity: 1; }
-    100% { transform: translateY(-100vh) translateX(30px) scale(0.5); opacity: 0; }
-  }
-
-  /* LOGIN CARD */
-  .login-card {
-    position: relative;
-    z-index: 10;
-    width: 400px;
-    max-width: 90vw;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 40px 35px;
-    animation: cardAppear 0.8s ease both;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  }
-  @keyframes cardAppear {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .title {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    text-align: center;
-    color: var(--water-light);
-    margin-bottom: 30px;
-    letter-spacing: 2px;
-  }
-  .title small {
-    font-size: 10px;
-    letter-spacing: 3px;
-    display: block;
-    opacity: 0.7;
-  }
-
-  /* TABS */
-  .tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 40px;
-    padding: 4px;
-  }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 8px;
-    cursor: pointer;
-    border-radius: 30px;
-    color: rgba(79,195,247,0.6);
-    font-size: 12px;
-    background: transparent;
-    border: none;
-  }
-  .tab.active {
-    background: rgba(79,195,247,0.15);
-    color: var(--water-light);
-  }
-
-  /* FORMS */
+  @keyframes rippleOut { 0% { transform: scale(0.2); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+  .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(79,195,247,0.4), rgba(79,195,247,0.05)); border: 1px solid rgba(79, 195, 247, 0.2); animation: floatUp linear infinite; pointer-events: none; }
+  @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(-100vh) translateX(30px) scale(0.5); opacity: 0; } }
+  .login-card { position: relative; z-index: 10; width: 400px; max-width: 90vw; background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px 35px; animation: cardAppear 0.8s ease both; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+  @keyframes cardAppear { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  .title { font-family: 'Cinzel', serif; font-size: 22px; text-align: center; color: var(--water-light); margin-bottom: 30px; letter-spacing: 2px; }
+  .title small { font-size: 10px; letter-spacing: 3px; display: block; opacity: 0.7; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(0,0,0,0.3); border-radius: 40px; padding: 4px; }
+  .tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; border-radius: 30px; color: rgba(79,195,247,0.6); font-size: 12px; background: transparent; border: none; }
+  .tab.active { background: rgba(79,195,247,0.15); color: var(--water-light); }
   .form-container { display: none; }
   .form-container.active { display: block; animation: fadeScale 0.3s ease; }
-  @keyframes fadeScale {
-    from { opacity: 0; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
+  @keyframes fadeScale { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
   .field { margin-bottom: 18px; }
-  .field label {
-    display: block;
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-  .field input {
-    width: 100%;
-    background: rgba(79,195,247,0.05);
-    border: 1px solid rgba(79,195,247,0.2);
-    border-radius: 8px;
-    padding: 12px 14px;
-    color: #fff;
-    font-size: 13px;
-    outline: none;
-  }
-  .field input:focus {
-    border-color: rgba(79,195,247,0.6);
-    box-shadow: 0 0 0 3px rgba(79,195,247,0.08);
-  }
-
-  .btn {
-    width: 100%;
-    background: transparent;
-    border: 1px solid rgba(79,195,247,0.4);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--water-light);
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 5px;
-  }
-  .btn:hover {
-    border-color: rgba(79,195,247,0.8);
-    box-shadow: 0 0 15px rgba(79,195,247,0.2);
-  }
+  .field label { display: block; font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px; }
+  .field input { width: 100%; background: rgba(79,195,247,0.05); border: 1px solid rgba(79,195,247,0.2); border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 13px; outline: none; }
+  .field input:focus { border-color: rgba(79,195,247,0.6); box-shadow: 0 0 0 3px rgba(79,195,247,0.08); }
+  .btn { width: 100%; background: transparent; border: 1px solid rgba(79,195,247,0.4); border-radius: 8px; padding: 12px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 2px; color: var(--water-light); cursor: pointer; transition: all 0.3s; margin-top: 5px; }
+  .btn:hover { border-color: rgba(79,195,247,0.8); box-shadow: 0 0 15px rgba(79,195,247,0.2); }
   .btn-secondary { margin-top: 12px; }
-
-  .remember-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  .remember {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  .remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .remember { display: flex; align-items: center; gap: 6px; }
   .remember input { width: 14px; height: 14px; cursor: pointer; }
   .remember label { font-size: 11px; color: var(--text-dim); cursor: pointer; }
   .forgot-link { font-size: 11px; color: var(--water-light); cursor: pointer; opacity: 0.7; }
   .forgot-link:hover { opacity: 1; }
-
-  .alert {
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    font-size: 12px;
-    display: none;
-  }
+  .alert { padding: 10px; border-radius: 8px; margin-bottom: 18px; font-size: 12px; display: none; }
   .alert-error { background: rgba(198,40,40,0.2); color: #ff8a8a; border-left: 3px solid #ff5c5c; }
   .alert-success { background: rgba(10,124,62,0.2); color: #8bcb9a; border-left: 3px solid #4caf50; }
-  .info-box {
-    background: rgba(21,101,192,0.15);
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 18px;
-    font-size: 11px;
-    color: #90CAF9;
-    border-left: 3px solid #4fc3f7;
-  }
-  .steps {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .step {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.08);
-    color: rgba(79,195,247,0.5);
-  }
+  .info-box { background: rgba(21,101,192,0.15); border-radius: 8px; padding: 10px; margin-bottom: 18px; font-size: 11px; color: #90CAF9; border-left: 3px solid #4fc3f7; }
+  .steps { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+  .step { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); color: rgba(79,195,247,0.5); }
   .step.active { background: #1a6b8a; color: white; }
   .step.done { background: #0A7C3E; color: white; }
   .step-line { width: 40px; height: 2px; background: rgba(79,195,247,0.2); }
   .step-line.done { background: #0A7C3E; }
-  .card-footer {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(79,195,247,0.1);
-  }
-  .card-footer a {
-    font-size: 10px;
-    color: var(--text-dim);
-    cursor: pointer;
-    text-decoration: none;
-  }
+  .card-footer { display: flex; justify-content: center; gap: 20px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(79,195,247,0.1); }
+  .card-footer a { font-size: 10px; color: var(--text-dim); cursor: pointer; text-decoration: none; }
   .card-footer a:hover { color: var(--water-light); }
 </style>
 </head>
 <body>
-
 <div class="water-bg">
   <div class="wave wave-1"></div>
   <div class="wave wave-2"></div>
@@ -287,7 +76,6 @@
 
 <div class="login-card">
   <h1 class="title">GrievAI Portal<br><small>MADHYA PRADESH GOVERNMENT</small></h1>
-
   <div class="tabs">
     <button class="tab active" id="tabLoginBtn">🔐 LOGIN</button>
     <button class="tab" id="tabRegisterBtn">✨ REGISTER</button>
@@ -326,9 +114,18 @@
       <button class="btn btn-secondary" id="backToLoginFromForgot">BACK</button>
     </div>
     <div id="forgotStep2" style="display:none">
-      <div class="info-box">✅ Reset link sent! Check your email.</div>
+      <div class="info-box">✅ Reset link sent! Check your email inbox.</div>
       <button class="btn" id="goToLoginFromForgot">GO TO LOGIN</button>
     </div>
+  </div>
+
+  <!-- RESET PASSWORD (shown when ?reset=token in URL) -->
+  <div id="resetContainer" class="form-container">
+    <div id="resetAlert" class="alert"></div>
+    <div class="info-box">🔑 Enter your new password below.</div>
+    <div class="field"><label>New Password</label><input type="password" id="newPw" placeholder="min 6 characters"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="newPw2" placeholder="••••••••"></div>
+    <button class="btn" id="doResetBtn">SET NEW PASSWORD</button>
   </div>
 
   <div class="card-footer">
@@ -338,10 +135,8 @@
 </div>
 
 <script>
-  // Generate bubbles
   for(let i=0;i<15;i++){
-    let b=document.createElement('div');
-    b.classList.add('bubble');
+    let b=document.createElement('div'); b.classList.add('bubble');
     let s=Math.random()*12+4;
     b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:${Math.random()*20}%;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*10}s;`;
     document.querySelector('.water-bg').appendChild(b);
@@ -349,19 +144,25 @@
 
   if(localStorage.getItem('grv_token')) window.location.href='/';
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get('reset');
+  if(resetToken) showTab('reset');
+
   function showTab(t){
-    document.getElementById('loginContainer').classList.remove('active');
-    document.getElementById('registerContainer').classList.remove('active');
-    document.getElementById('forgotContainer').classList.remove('active');
+    ['loginContainer','registerContainer','forgotContainer','resetContainer'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.classList.remove('active');
+    });
     document.getElementById('tabLoginBtn').classList.remove('active');
     document.getElementById('tabRegisterBtn').classList.remove('active');
     if(t==='login'){ document.getElementById('loginContainer').classList.add('active'); document.getElementById('tabLoginBtn').classList.add('active'); }
     else if(t==='register'){ document.getElementById('registerContainer').classList.add('active'); document.getElementById('tabRegisterBtn').classList.add('active'); }
-    else if(t==='forgot'){ document.getElementById('forgotContainer').classList.add('active'); document.getElementById('tabLoginBtn').classList.add('active');
+    else if(t==='forgot'){
+      document.getElementById('forgotContainer').classList.add('active'); document.getElementById('tabLoginBtn').classList.add('active');
       document.getElementById('forgotStep1').style.display='block'; document.getElementById('forgotStep2').style.display='none';
       document.getElementById('step1').className='step active'; document.getElementById('step2').className='step';
       document.getElementById('line1').className='step-line';
     }
+    else if(t==='reset'){ document.getElementById('resetContainer').classList.add('active'); document.getElementById('tabLoginBtn').classList.add('active'); }
   }
 
   document.getElementById('tabLoginBtn').onclick=()=>showTab('login');
@@ -374,7 +175,7 @@
 
   function showAlert(id,msg,isErr){
     let el=document.getElementById(id);
-    if(el){ el.innerHTML=(isErr?'❌ ':'✅ ')+msg; el.className='alert '+(isErr?'alert-error':'alert-success'); el.style.display='block'; if(!isErr) setTimeout(()=>el.style.display='none',5000); }
+    if(el){ el.innerHTML=(isErr?'❌ ':'✅ ')+msg; el.className='alert '+(isErr?'alert-error':'alert-success'); el.style.display='block'; if(!isErr&&isErr!==false) setTimeout(()=>el.style.display='none',5000); }
   }
 
   // LOGIN
@@ -387,8 +188,8 @@
       let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
       let data=await res.json();
       if(data.success){
-        localStorage.setItem('grv_user',JSON.stringify({name:data.name,email}));
-        localStorage.setItem('grv_token','logged_in');
+        localStorage.setItem('grv_user',JSON.stringify({name:data.user.name,email:data.user.email}));
+        localStorage.setItem('grv_token',data.token);
         showAlert('loginAlert','Login successful!',false);
         setTimeout(()=>window.location.href='/',1000);
       } else showAlert('loginAlert',data.error||'Invalid credentials',true);
@@ -402,26 +203,25 @@
     let pw=document.getElementById('regPassword').value;
     let pw2=document.getElementById('regPassword2').value;
     if(!name){ showAlert('regAlert','Enter name',true); return; }
-    if(!email){ showAlert('regAlert','Enter email',true); return; }
-    if(!pw||pw.length<6){ showAlert('regAlert','Password 6+ chars',true); return; }
+    if(!email||!email.includes('@')){ showAlert('regAlert','Enter valid email',true); return; }
+    if(!pw||pw.length<6){ showAlert('regAlert','Password min 6 characters',true); return; }
     if(pw!==pw2){ showAlert('regAlert','Passwords do not match',true); return; }
     try{
       let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pw})});
       let data=await res.json();
       if(data.success){
-        showAlert('regAlert',data.message||'Registration successful! Check email.',false);
-        document.getElementById('regName').value=''; document.getElementById('regEmail').value='';
-        document.getElementById('regPassword').value=''; document.getElementById('regPassword2').value='';
-        setTimeout(()=>showTab('login'),2000);
+        showAlert('regAlert',data.message||'Registration successful! Check your email to verify.',false);
+        ['regName','regEmail','regPassword','regPassword2'].forEach(id=>document.getElementById(id).value='');
+        setTimeout(()=>showTab('login'),3000);
       } else showAlert('regAlert',data.error||'Registration failed',true);
     } catch(e){ showAlert('regAlert','Server error',true); }
   };
 
-  // FORGOT
+  // FORGOT PASSWORD
   document.getElementById('sendResetLinkBtn').onclick=async()=>{
     let email=document.getElementById('forgotEmail').value.trim();
     if(!email){ showAlert('forgotAlert','Enter email',true); return; }
-    let btn=event.target;
+    let btn=document.getElementById('sendResetLinkBtn');
     btn.disabled=true; btn.innerHTML='⏳ Sending...';
     try{
       let res=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
@@ -429,13 +229,30 @@
       if(data.success){
         document.getElementById('forgotStep1').style.display='none';
         document.getElementById('forgotStep2').style.display='block';
-        document.getElementById('step1').classList.remove('active'); document.getElementById('step1').classList.add('done');
+        document.getElementById('step1').classList.replace('active','done');
         document.getElementById('line1').classList.add('done');
         document.getElementById('step2').classList.add('active');
-        showAlert('forgotAlert',data.message||'Reset link sent!',false);
-      } else showAlert('forgotAlert',data.error||'Failed',true);
+        showAlert('forgotAlert',data.message||'Reset link sent! Check your email.',false);
+      } else showAlert('forgotAlert',data.error||'Failed. Email not registered?',true);
     } catch(e){ showAlert('forgotAlert','Server error',true); }
     btn.disabled=false; btn.innerHTML='SEND RESET LINK';
+  };
+
+  // RESET PASSWORD (token from URL)
+  document.getElementById('doResetBtn').onclick=async()=>{
+    let pw=document.getElementById('newPw').value;
+    let pw2=document.getElementById('newPw2').value;
+    if(!pw||pw.length<6){ showAlert('resetAlert','Password min 6 characters',true); return; }
+    if(pw!==pw2){ showAlert('resetAlert','Passwords do not match',true); return; }
+    if(!resetToken){ showAlert('resetAlert','Invalid reset link',true); return; }
+    try{
+      let res=await fetch('/api/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:resetToken,new_password:pw})});
+      let data=await res.json();
+      if(data.success){
+        showAlert('resetAlert',data.message||'Password reset! Redirecting to login...',false);
+        setTimeout(()=>{ window.history.replaceState({},'','/login.html'); showTab('login'); },2000);
+      } else showAlert('resetAlert',data.error||'Reset failed',true);
+    } catch(e){ showAlert('resetAlert','Server error',true); }
   };
 </script>
 </body>
