@@ -4,6 +4,10 @@ GrievAI Production Server v3.2 — FIXED & IMPROVED
 - Database auto-connects (SQLite local / PostgreSQL Railway)
 - All endpoints working
 - FORGET PASSWORD FULLY FIXED
+- FIXED: %s vs ? placeholder for SQLite/PostgreSQL
+- FIXED: to_dict None check
+- FIXED: otp LIKE query
+- FIXED: session token header
 """
 import os, random, string, threading, requests, traceback, hashlib, secrets
 from datetime import datetime, timedelta
@@ -16,7 +20,6 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
-# Auto DB init — Railway/gunicorn ke liye
 from database import init_db as _init_db
 _init_db()
 
@@ -34,7 +37,6 @@ USE_TWILIO   = bool(TWILIO_SID and TWILIO_TOKEN and TWILIO_FROM)
 USE_EMAIL    = bool(RESEND_API_KEY and ALERT_EMAILS)
 USE_CLAUDE   = bool(ANTHROPIC_KEY)
 
-# Import from database module
 from database import get_conn, qexec, qmany, to_dict, all_dicts, init_db
 from ai_engine import classify_complaint, calculate_stats
 
@@ -53,6 +55,18 @@ def fmt_mobile(m):
     if not m.startswith('+'): m = '+91' + m
     return m
 
+# FIX: Placeholder helper — SQLite uses ?, PostgreSQL uses %s
+def ph(n=1):
+    """Return correct placeholders for current DB"""
+    mark = '%s' if USE_POSTGRES else '?'
+    return ', '.join([mark] * n)
+
+def fix_sql(sql):
+    """Convert %s to ? for SQLite"""
+    if not USE_POSTGRES:
+        sql = sql.replace('%s', '?')
+    return sql
+
 # ── OTP SERVICE ───────────────────────────────────────────────────────────────
 def send_otp_svc(mobile):
     mobile = fmt_mobile(mobile)
@@ -61,8 +75,8 @@ def send_otp_svc(mobile):
 
     try:
         conn = get_conn()
-        qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE mobile=%s AND verified=0", (mobile,))
-        qexec(conn, "INSERT INTO otp_verifications(mobile,otp,verified,expires_at) VALUES(%s,%s,0,%s)", (mobile, otp, exp))
+        qexec(conn, fix_sql("UPDATE otp_verifications SET verified=1 WHERE mobile=%s AND verified=0"), (mobile,))
+        qexec(conn, fix_sql("INSERT INTO otp_verifications(mobile,otp,verified,expires_at) VALUES(%s,%s,0,%s)"), (mobile, otp, exp))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -102,7 +116,7 @@ def verify_otp_svc(mobile, otp):
     try:
         conn = get_conn()
         cur  = qexec(conn,
-            "SELECT id,otp,expires_at FROM otp_verifications WHERE mobile=%s AND verified=0 ORDER BY id DESC LIMIT 1",
+            fix_sql("SELECT id,otp,expires_at FROM otp_verifications WHERE mobile=%s AND verified=0 ORDER BY id DESC LIMIT 1"),
             (mobile,))
         row = cur.fetchone()
         if not row:
@@ -125,11 +139,11 @@ def verify_otp_svc(mobile, otp):
             conn.close()
             return {"success": False, "error": "Galat OTP। Sahi number enter karein।"}
 
-        qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE id=%s", (rid,))
+        qexec(conn, fix_sql("UPDATE otp_verifications SET verified=1 WHERE id=%s"), (rid,))
         if USE_POSTGRES:
-            qexec(conn, "INSERT INTO citizens(mobile,verified) VALUES(%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET verified=TRUE", (mobile,))
+            qexec(conn, fix_sql("INSERT INTO citizens(mobile,verified) VALUES(%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET verified=TRUE"), (mobile,))
         else:
-            qexec(conn, "INSERT OR REPLACE INTO citizens(mobile,verified) VALUES(?,1)", (mobile,))
+            qexec(conn, fix_sql("INSERT OR REPLACE INTO citizens(mobile,verified) VALUES(%s,1)"), (mobile,))
         conn.commit()
         conn.close()
 
@@ -138,7 +152,7 @@ def verify_otp_svc(mobile, otp):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-# ── EMAIL TEMPLATES (simplified) ──────────────────────────────────────────────
+# ── EMAIL TEMPLATES ───────────────────────────────────────────────────────────
 def _user_email_html(complaint, ai):
     return f"<h3>Complaint {complaint['complaint_id']} submitted</h3><p>{complaint['raw_text']}</p>"
 
@@ -229,7 +243,7 @@ def health():
         db_ok = True
     except: pass
     return jsonify({
-        "status": "ok", "version": "3.2.0",
+        "status": "ok", "version": "3.2.1",
         "db": "PostgreSQL ✅" if USE_POSTGRES else "SQLite ✅",
         "db_connected": db_ok,
         "otp_mode": "Twilio SMS" if USE_TWILIO else "Terminal (Test Mode)",
@@ -280,12 +294,12 @@ def complaints():
             photos = int(d.get('photo_count', 0))
 
             conn = get_conn()
-            qexec(conn, """INSERT INTO complaints(
+            qexec(conn, fix_sql("""INSERT INTO complaints(
                 complaint_id,citizen_name,mobile,mobile_verified,district,area,language,
                 raw_text,department,category,priority,status,ai_confidence,ai_summary,
                 eta_days,officer_name,dept_full,latitude,longitude,location_accuracy,
                 input_mode,photo_count,created_at,updated_at
-            ) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            ) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""),
                 (cid, d.get('citizen_name', '').strip(), mobile, 1,
                  d.get('district', ''), d.get('area', ''), d.get('language', ai['language']),
                  text, ai['department'], ai['category'], ai['priority'], 'open',
@@ -293,13 +307,13 @@ def complaints():
                  lat, lng, acc, mode, photos, now, now))
 
             loc_note = f" | Location: {lat:.5f},{lng:.5f}" if lat and lng else ""
-            qmany(conn, "INSERT INTO timeline_events(complaint_id,event_title,event_desc,event_time,status) VALUES(%s,%s,%s,%s,%s)", [
+            qmany(conn, fix_sql("INSERT INTO timeline_events(complaint_id,event_title,event_desc,event_time,status) VALUES(%s,%s,%s,%s,%s)"), [
                 (cid, "Complaint received", f"Submitted by {d.get('citizen_name','')} from {d.get('area','')}, {d.get('district','')}.{loc_note}", now, "done"),
                 (cid, "AI classification complete", f"Classified as {ai['department']} with {ai['confidence']}% confidence.", now, "done"),
             ])
-            qexec(conn, "UPDATE departments SET complaint_count=complaint_count+1 WHERE name=%s", (ai['department'],))
+            qexec(conn, fix_sql("UPDATE departments SET complaint_count=complaint_count+1 WHERE name=%s"), (ai['department'],))
             conn.commit()
-            cur = qexec(conn, "SELECT * FROM complaints WHERE complaint_id=%s", (cid,))
+            cur = qexec(conn, fix_sql("SELECT * FROM complaints WHERE complaint_id=%s"), (cid,))
             row = to_dict(cur, cur.fetchone())
             conn.close()
 
@@ -317,20 +331,20 @@ def complaints():
             return jsonify({"error": str(e)}), 500
     else:
         try:
-            dept = request.args.get('department')
-            status = request.args.get('status')
+            dept     = request.args.get('department')
+            status   = request.args.get('status')
             priority = request.args.get('priority')
-            limit = int(request.args.get('limit', 50))
-            offset = int(request.args.get('offset', 0))
+            limit    = int(request.args.get('limit', 50))
+            offset   = int(request.args.get('offset', 0))
             where, params = [], []
-            if dept: where.append("department=%s"); params.append(dept)
-            if status: where.append("status=%s"); params.append(status)
-            if priority: where.append("priority=%s"); params.append(priority)
+            if dept:     where.append(fix_sql("department=%s"));  params.append(dept)
+            if status:   where.append(fix_sql("status=%s"));      params.append(status)
+            if priority: where.append(fix_sql("priority=%s"));    params.append(priority)
             wsql = ("WHERE " + " AND ".join(where)) if where else ""
             conn = get_conn()
-            cur = qexec(conn, f"SELECT * FROM complaints {wsql} ORDER BY created_at DESC LIMIT %s OFFSET %s", params + [limit, offset])
+            cur  = qexec(conn, fix_sql(f"SELECT * FROM complaints {wsql} ORDER BY created_at DESC LIMIT %s OFFSET %s"), params + [limit, offset])
             comps = all_dicts(cur)
-            cur2 = qexec(conn, f"SELECT COUNT(*) FROM complaints {wsql}", params)
+            cur2  = qexec(conn, fix_sql(f"SELECT COUNT(*) FROM complaints {wsql}"), params)
             total = cur2.fetchone()[0]
             conn.close()
             return jsonify({"complaints": comps, "total": total, "stats": calculate_stats(comps)})
@@ -342,68 +356,84 @@ def complaints():
 def complaint_detail(cid):
     try:
         conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM complaints WHERE complaint_id=%s", (cid,))
-        row = to_dict(cur, cur.fetchone())
-        if not row: conn.close(); return err(f"Complaint {cid} not found", 404)
+        cur  = qexec(conn, fix_sql("SELECT * FROM complaints WHERE complaint_id=%s"), (cid,))
+        fetched = cur.fetchone()
+        # FIX: None check before to_dict
+        if fetched is None:
+            conn.close()
+            return err(f"Complaint {cid} not found", 404)
+        row = to_dict(cur, fetched)
 
         if request.method == 'GET':
-            cur2 = qexec(conn, "SELECT * FROM timeline_events WHERE complaint_id=%s ORDER BY event_time ASC", (cid,))
-            tl = all_dicts(cur2); conn.close()
+            cur2 = qexec(conn, fix_sql("SELECT * FROM timeline_events WHERE complaint_id=%s ORDER BY event_time ASC"), (cid,))
+            tl = all_dicts(cur2)
+            conn.close()
             return jsonify({"complaint": row, "timeline": tl})
 
         d = request.get_json() or {}
         allowed = ['status', 'priority', 'officer_name', 'eta_days']
         updates = {f: d[f] for f in allowed if f in d}
-        if not updates: conn.close(); return err("No valid fields")
+        if not updates:
+            conn.close()
+            return err("No valid fields")
         updates['updated_at'] = datetime.now().isoformat()
-        sc = ", ".join(f"{k}=%s" for k in updates)
-        qexec(conn, f"UPDATE complaints SET {sc} WHERE complaint_id=%s", list(updates.values()) + [cid])
+        sc = ", ".join(fix_sql(f"{k}=%s") for k in updates)
+        qexec(conn, fix_sql(f"UPDATE complaints SET {sc} WHERE complaint_id=%s"), list(updates.values()) + [cid])
         if 'status' in updates:
             lbs = {'in_progress': ("Work In Progress", "Department ne kaam shuru kar diya।"),
-                   'resolved': ("Issue Resolved", "Complaint resolve kar di gayi।"),
-                   'closed': ("Complaint Closed", "Case closed।")}
+                   'resolved':    ("Issue Resolved",   "Complaint resolve kar di gayi।"),
+                   'closed':      ("Complaint Closed", "Case closed।")}
             lb, dc = lbs.get(updates['status'], ("Status Updated", "Status badla।"))
-            qexec(conn, "INSERT INTO timeline_events(complaint_id,event_title,event_desc,event_time,status) VALUES(%s,%s,%s,%s,%s)",
+            qexec(conn, fix_sql("INSERT INTO timeline_events(complaint_id,event_title,event_desc,event_time,status) VALUES(%s,%s,%s,%s,%s)"),
                   (cid, lb, dc, datetime.now().isoformat(), 'done'))
         conn.commit()
-        cur3 = qexec(conn, "SELECT * FROM complaints WHERE complaint_id=%s", (cid,))
-        updated = to_dict(cur3, cur3.fetchone()); conn.close()
+        cur3    = qexec(conn, fix_sql("SELECT * FROM complaints WHERE complaint_id=%s"), (cid,))
+        updated = to_dict(cur3, cur3.fetchone())
+        conn.close()
         return jsonify({"success": True, "complaint": updated})
     except Exception as e:
-        traceback.print_exc(); return jsonify({"error": str(e)}), 500
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/analytics')
 def analytics():
     try:
         import random as rnd
-        conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM complaints"); comps = all_dicts(cur)
-        cur2 = qexec(conn, "SELECT * FROM departments ORDER BY complaint_count DESC"); depts = all_dicts(cur2)
+        conn  = get_conn()
+        cur   = qexec(conn, "SELECT * FROM complaints");   comps = all_dicts(cur)
+        cur2  = qexec(conn, "SELECT * FROM departments ORDER BY complaint_count DESC"); depts = all_dicts(cur2)
         conn.close()
         stats = calculate_stats(comps)
         return jsonify({
-            "summary": {"total_complaints": len(comps), "resolved_today": sum(1 for c in comps if c.get('status') == 'resolved'),
-                        "avg_resolution_days": 2.4, "ai_accuracy": 94.2},
-            "dept_stats": stats.get("dept_counts", {}),
-            "priority_stats": stats.get("priority_counts", {}),
-            "status_stats": stats.get("status_counts", {}),
-            "language_stats": stats.get("lang_counts", {}),
-            "departments": depts,
-            "weekly_trend": [{"week": f"W{8-i}", "submitted": (s := rnd.randint(180, 350)), "resolved": int(s * rnd.uniform(0.6, 0.9))} for i in range(7, -1, -1)],
+            "summary": {
+                "total_complaints":  len(comps),
+                "resolved_today":    sum(1 for c in comps if c.get('status') == 'resolved'),
+                "avg_resolution_days": 2.4,
+                "ai_accuracy":       94.2
+            },
+            "dept_stats":      stats.get("dept_counts", {}),
+            "priority_stats":  stats.get("priority_counts", {}),
+            "status_stats":    stats.get("status_counts", {}),
+            "language_stats":  stats.get("lang_counts", {}),
+            "departments":     depts,
+            "weekly_trend":    [{"week": f"W{8-i}", "submitted": (s := rnd.randint(180, 350)), "resolved": int(s * rnd.uniform(0.6, 0.9))} for i in range(7, -1, -1)],
             "resolution_times": {"Water Supply": 3.2, "Roads & PWD": 5.1, "Electricity": 1.8, "Sanitation": 2.4, "Public Services": 4.0, "Healthcare": 2.1}
         })
     except Exception as e:
-        traceback.print_exc(); return jsonify({"error": str(e)}), 500
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/departments')
 def departments():
     try:
         conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM departments ORDER BY complaint_count DESC")
-        rows = all_dicts(cur); conn.close()
+        cur  = qexec(conn, "SELECT * FROM departments ORDER BY complaint_count DESC")
+        rows = all_dicts(cur)
+        conn.close()
         return jsonify({"departments": rows})
     except Exception as e:
-        traceback.print_exc(); return jsonify({"error": str(e)}), 500
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/classify', methods=['POST'])
 def classify_only():
@@ -431,12 +461,11 @@ def create_session(email, name):
     return token
 
 def save_reset_token(email, token, token_type):
-    """Save token in otp_verifications table (reuse existing table)"""
     exp = (datetime.now() + timedelta(hours=1)).isoformat()
     try:
         conn = get_conn()
-        qexec(conn, "DELETE FROM otp_verifications WHERE mobile=%s AND verified=0", (f"__reset__{email}",))
-        qexec(conn, "INSERT INTO otp_verifications(mobile,otp,verified,expires_at) VALUES(%s,%s,0,%s)",
+        qexec(conn, fix_sql("DELETE FROM otp_verifications WHERE mobile=%s AND verified=0"), (f"__reset__{email}",))
+        qexec(conn, fix_sql("INSERT INTO otp_verifications(mobile,otp,verified,expires_at) VALUES(%s,%s,0,%s)"),
               (f"__reset__{email}", f"{token_type}:{token}", exp))
         conn.commit()
         conn.close()
@@ -447,39 +476,57 @@ def get_reset_token(token):
     """Find token in DB, return email and type if valid"""
     try:
         conn = get_conn()
-        cur = qexec(conn, "SELECT mobile, otp, expires_at FROM otp_verifications WHERE otp LIKE %s AND verified=0",
-                    (f"%:{token}",))
-        row = to_dict(cur, cur.fetchone())
+        # FIX: LIKE with wildcard — use concat in SQL or Python-side filter
+        if USE_POSTGRES:
+            cur = qexec(conn,
+                "SELECT mobile, otp, expires_at FROM otp_verifications WHERE otp LIKE %s AND verified=0",
+                (f"%:{token}",))
+        else:
+            # FIX: SQLite uses ? placeholder
+            cur = qexec(conn,
+                "SELECT mobile, otp, expires_at FROM otp_verifications WHERE otp LIKE ? AND verified=0",
+                (f"%:{token}",))
+        fetched = cur.fetchone()
         conn.close()
-        if not row:
+        # FIX: None check before to_dict
+        if fetched is None:
             return None
+        row = dict(fetched) if not isinstance(fetched, dict) else fetched
         # Check expiry
         try:
-            exp = datetime.fromisoformat(row["expires_at"])
-            if datetime.now() > exp:
-                return None
-        except:
+            exp_val = row.get("expires_at")
+            if exp_val:
+                exp = datetime.fromisoformat(str(exp_val))
+                if datetime.now() > exp:
+                    return None
+        except Exception:
             pass
-        token_type, _ = row["otp"].split(":", 1)
-        email = row["mobile"].replace("__reset__", "")
+        otp_val = row.get("otp", "")
+        if ":" not in otp_val:
+            return None
+        token_type, _ = otp_val.split(":", 1)
+        email = row.get("mobile", "").replace("__reset__", "")
         return {"email": email, "type": token_type}
     except Exception as e:
         print(f"[TOKEN] Get error: {e}")
         return None
 
 def consume_reset_token(token):
-    """Mark token as used"""
     try:
         conn = get_conn()
-        qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE otp LIKE %s AND verified=0",
-              (f"%:{token}",))
+        if USE_POSTGRES:
+            qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE otp LIKE %s AND verified=0",
+                  (f"%:{token}",))
+        else:
+            # FIX: SQLite uses ?
+            qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE otp LIKE ? AND verified=0",
+                  (f"%:{token}",))
         conn.commit()
         conn.close()
     except Exception as e:
         print(f"[TOKEN] Consume error: {e}")
 
 def send_verification_email(email, name, token):
-    """Send email verification link"""
     verify_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/api/auth/verify-email?token={token}"
     if not USE_EMAIL:
         print(f"\n  [EMAIL TEST] Verification link for {email}:\n  {verify_url}\n")
@@ -503,7 +550,6 @@ def send_verification_email(email, name, token):
         print(f"[EMAIL] ❌ Verification email error: {e}")
 
 def send_reset_email(email, name, token):
-    """Send password reset link"""
     reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={token}"
     if not USE_EMAIL:
         print(f"\n  [EMAIL TEST] Password reset link for {email}:\n  {reset_url}\n")
@@ -529,7 +575,7 @@ def send_reset_email(email, name, token):
         return False
 
 
-# ── AUTH ROUTES — EMAIL ONLY ──────────────────────────────────────────────────
+# ── AUTH ROUTES ───────────────────────────────────────────────────────────────
 
 @app.route("/api/auth/register", methods=["POST"])
 def auth_register():
@@ -549,9 +595,10 @@ def auth_register():
 
     try:
         conn = get_conn()
-        # Check already registered
-        cur = qexec(conn, "SELECT id, verified FROM citizens WHERE email=%s", (email,))
-        row = to_dict(cur, cur.fetchone())
+        cur  = qexec(conn, fix_sql("SELECT id, verified FROM citizens WHERE email=%s"), (email,))
+        fetched = cur.fetchone()
+        # FIX: None check
+        row = dict(fetched) if fetched else None
         if row and row.get("verified"):
             conn.close()
             return err("Yeh email already registered hai। Login karein।")
@@ -568,7 +615,6 @@ def auth_register():
         conn.commit()
         conn.close()
 
-        # Send verification email in background
         vtok = make_token(email)
         save_reset_token(email, vtok, "verify")
         threading.Thread(target=send_verification_email, args=(email, name, vtok), daemon=True).start()
@@ -593,7 +639,7 @@ def verify_email():
     consume_reset_token(token)
     try:
         conn = get_conn()
-        qexec(conn, "UPDATE citizens SET verified=1 WHERE email=%s", (rec["email"],))
+        qexec(conn, fix_sql("UPDATE citizens SET verified=1 WHERE email=%s"), (rec["email"],))
         conn.commit()
         conn.close()
         return "<h3>✅ Email verified! Ab <a href='/login.html'>login karein</a>।</h3>"
@@ -612,12 +658,15 @@ def auth_login():
 
     try:
         conn = get_conn()
-        cur  = qexec(conn, "SELECT * FROM citizens WHERE email=%s", (email,))
-        row  = to_dict(cur, cur.fetchone())
+        cur  = qexec(conn, fix_sql("SELECT * FROM citizens WHERE email=%s"), (email,))
+        fetched = cur.fetchone()
         conn.close()
 
-        if not row:
+        # FIX: None check before dict conversion
+        if fetched is None:
             return err("Yeh email registered nahi hai। Pehle register karein।")
+        row = dict(fetched) if not isinstance(fetched, dict) else fetched
+
         if not row.get("password_hash"):
             return err("Is account ka password set nahi hai।")
         if row["password_hash"] != hash_pw(pw):
@@ -642,18 +691,18 @@ def auth_forgot():
 
     try:
         conn = get_conn()
-        cur  = qexec(conn, "SELECT * FROM citizens WHERE email=%s", (email,))
-        row  = to_dict(cur, cur.fetchone())
+        cur  = qexec(conn, fix_sql("SELECT * FROM citizens WHERE email=%s"), (email,))
+        fetched = cur.fetchone()
         conn.close()
 
-        if not row:
+        if fetched is None:
             return err("Yeh email registered nahi hai। Pehle register karein।")
-    except Exception as e:
+        row = dict(fetched) if not isinstance(fetched, dict) else fetched
+    except Exception:
         return err("Database error", 500)
 
     rtok = make_token(email)
     save_reset_token(email, rtok, "reset")
-
     threading.Thread(target=send_reset_email, args=(email, row.get("name",""), rtok), daemon=True).start()
 
     if not USE_EMAIL:
@@ -684,7 +733,7 @@ def auth_reset():
     email   = rec["email"]
     try:
         conn = get_conn()
-        qexec(conn, "UPDATE citizens SET password_hash=%s, verified=1 WHERE email=%s", (pw_hash, email))
+        qexec(conn, fix_sql("UPDATE citizens SET password_hash=%s, verified=1 WHERE email=%s"), (pw_hash, email))
         conn.commit()
         conn.close()
         print(f"[AUTH] ✅ Password reset: {email}")
@@ -696,8 +745,14 @@ def auth_reset():
 
 @app.route("/api/auth/me", methods=["GET"])
 def auth_me():
-    token = request.headers.get("X-Auth-Token", "")
-    sess  = get_session(token)
+    # FIX: Support both Authorization Bearer and X-Auth-Token headers
+    auth_header = request.headers.get("Authorization", "")
+    token = ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+    else:
+        token = request.headers.get("X-Auth-Token", "")
+    sess = get_session(token)
     if not sess:
         return jsonify({"authenticated": False}), 401
     return jsonify({"authenticated": True, "user": sess})
@@ -705,7 +760,12 @@ def auth_me():
 
 @app.route("/api/auth/logout", methods=["POST"])
 def auth_logout():
-    token = request.headers.get("X-Auth-Token", "")
+    auth_header = request.headers.get("Authorization", "")
+    token = ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+    else:
+        token = request.headers.get("X-Auth-Token", "")
     SESSIONS.pop(token, None)
     return jsonify({"success": True})
 
@@ -716,7 +776,7 @@ if __name__ == '__main__':
     print(f"\n  ╔{border}╗")
     print(f"  ║{'':^53}║")
     print(f"  ║{'  🏛️  GrievAI Portal — MP Government':^53}║")
-    print(f"  ║{'  Civic Complaint Management System v3.2':^53}║")
+    print(f"  ║{'  Civic Complaint Management System v3.2.1':^53}║")
     print(f"  ║{'':^53}║")
     print(f"  ╠{border}╣")
 
