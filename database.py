@@ -41,18 +41,11 @@ CREATE TABLE IF NOT EXISTS otp_verifications (
     created_at TEXT DEFAULT (datetime('now')),
     expires_at TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS feedback (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    rating INTEGER NOT NULL,
-    message TEXT NOT NULL,
-    user_name TEXT DEFAULT 'Anonymous',
-    created_at TEXT DEFAULT (datetime('now'))
-);
 CREATE TABLE IF NOT EXISTS citizens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    mobile TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    mobile TEXT,
     name TEXT,
-    email TEXT,
     password_hash TEXT,
     verified INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
@@ -153,8 +146,8 @@ def init_db():
                 id SERIAL PRIMARY KEY, mobile TEXT NOT NULL, otp TEXT NOT NULL,
                 verified BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW(), expires_at TIMESTAMP NOT NULL)""",
             """CREATE TABLE IF NOT EXISTS citizens (
-                id SERIAL PRIMARY KEY, mobile TEXT UNIQUE NOT NULL,
-                name TEXT, email TEXT, password_hash TEXT,
+                id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL,
+                mobile TEXT, name TEXT, password_hash TEXT,
                 verified BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW(),
                 last_login TIMESTAMP)""",
             """CREATE TABLE IF NOT EXISTS complaints (
@@ -171,9 +164,6 @@ def init_db():
             """CREATE TABLE IF NOT EXISTS departments (
                 id SERIAL PRIMARY KEY, name TEXT NOT NULL, short_name TEXT NOT NULL,
                 officer_name TEXT, contact TEXT, complaint_count INTEGER DEFAULT 0)""",
-            """CREATE TABLE IF NOT EXISTS feedback (
-                id SERIAL PRIMARY KEY, rating INTEGER NOT NULL, message TEXT NOT NULL,
-                user_name TEXT DEFAULT 'Anonymous', created_at TIMESTAMP DEFAULT NOW())""",
         ]
         for stmt in postgres_tables:
             cur.execute(stmt)
