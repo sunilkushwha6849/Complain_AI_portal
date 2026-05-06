@@ -421,7 +421,6 @@ def make_token(key):
     return hashlib.sha256(f"{key}-{secrets.token_hex(16)}".encode()).hexdigest()[:32]
 
 SESSIONS = {}
-RESET_TOKENS = {}  # email -> token (for password reset)
 
 def get_session(token):
     return SESSIONS.get(token)
@@ -431,9 +430,57 @@ def create_session(email, name):
     SESSIONS[token] = {"email": email, "name": name, "at": datetime.now().isoformat()}
     return token
 
+def save_reset_token(email, token, token_type):
+    """Save token in otp_verifications table (reuse existing table)"""
+    exp = (datetime.now() + timedelta(hours=1)).isoformat()
+    try:
+        conn = get_conn()
+        qexec(conn, "DELETE FROM otp_verifications WHERE mobile=%s AND verified=0", (f"__reset__{email}",))
+        qexec(conn, "INSERT INTO otp_verifications(mobile,otp,verified,expires_at) VALUES(%s,%s,0,%s)",
+              (f"__reset__{email}", f"{token_type}:{token}", exp))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[TOKEN] Save error: {e}")
+
+def get_reset_token(token):
+    """Find token in DB, return email and type if valid"""
+    try:
+        conn = get_conn()
+        cur = qexec(conn, "SELECT mobile, otp, expires_at FROM otp_verifications WHERE otp LIKE %s AND verified=0",
+                    (f"%:{token}",))
+        row = to_dict(cur, cur.fetchone())
+        conn.close()
+        if not row:
+            return None
+        # Check expiry
+        try:
+            exp = datetime.fromisoformat(row["expires_at"])
+            if datetime.now() > exp:
+                return None
+        except:
+            pass
+        token_type, _ = row["otp"].split(":", 1)
+        email = row["mobile"].replace("__reset__", "")
+        return {"email": email, "type": token_type}
+    except Exception as e:
+        print(f"[TOKEN] Get error: {e}")
+        return None
+
+def consume_reset_token(token):
+    """Mark token as used"""
+    try:
+        conn = get_conn()
+        qexec(conn, "UPDATE otp_verifications SET verified=1 WHERE otp LIKE %s AND verified=0",
+              (f"%:{token}",))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[TOKEN] Consume error: {e}")
+
 def send_verification_email(email, name, token):
     """Send email verification link"""
-    verify_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/verify-email?token={token}"
+    verify_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/api/auth/verify-email?token={token}"
     if not USE_EMAIL:
         print(f"\n  [EMAIL TEST] Verification link for {email}:\n  {verify_url}\n")
         return
@@ -448,7 +495,7 @@ def send_verification_email(email, name, token):
                 <p>Namaste <b>{name}</b>!</p>
                 <p>Aapka account verify karne ke liye neeche click karein:</p>
                 <a href="{verify_url}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#FF6200;color:white;border-radius:30px;text-decoration:none;font-weight:bold;">✅ Email Verify Karein</a>
-                <p style="color:#999;font-size:12px;">Yeh link 24 ghante valid hai. Agar aapne register nahi kiya toh ignore karein.</p>
+                <p style="color:#999;font-size:12px;">Yeh link 1 ghante valid hai.</p>
             </div>"""
         }, timeout=15)
         print(f"[EMAIL] ✅ Verification email sent → {email}")
@@ -463,7 +510,7 @@ def send_reset_email(email, name, token):
         return True
     try:
         headers = {"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"}
-        r = requests.post("https://api.resend.com/emails", headers=headers, json={
+        requests.post("https://api.resend.com/emails", headers=headers, json={
             "from": "GrievAI Portal <noreply@resend.dev>",
             "to": [email],
             "subject": "🔑 GrievAI — Password Reset Link",
@@ -472,7 +519,7 @@ def send_reset_email(email, name, token):
                 <p>Namaste <b>{name}</b>!</p>
                 <p>Password reset karne ke liye neeche click karein:</p>
                 <a href="{reset_url}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#FF6200;color:white;border-radius:30px;text-decoration:none;font-weight:bold;">🔑 Password Reset Karein</a>
-                <p style="color:#999;font-size:12px;">Yeh link 1 ghante valid hai. Agar aapne request nahi kiya toh ignore karein.</p>
+                <p style="color:#999;font-size:12px;">Yeh link 1 ghante valid hai.</p>
             </div>"""
         }, timeout=15)
         print(f"[EMAIL] ✅ Reset email sent → {email}")
@@ -499,8 +546,6 @@ def auth_register():
         return err("Password kam se kam 6 characters ka hona chahiye।")
 
     pw_hash = hash_pw(pw)
-    # Verification token
-    vtok = make_token(email)
 
     try:
         conn = get_conn()
@@ -524,9 +569,9 @@ def auth_register():
         conn.close()
 
         # Send verification email in background
+        vtok = make_token(email)
+        save_reset_token(email, vtok, "verify")
         threading.Thread(target=send_verification_email, args=(email, name, vtok), daemon=True).start()
-        # Store token temporarily (in-memory, good for single-server)
-        RESET_TOKENS[vtok] = {"email": email, "type": "verify", "at": datetime.now().isoformat()}
 
         print(f"[AUTH] ✅ Registered: {email} ({name})")
         return jsonify({
@@ -542,9 +587,10 @@ def auth_register():
 @app.route("/api/auth/verify-email", methods=["GET"])
 def verify_email():
     token = request.args.get("token", "")
-    rec   = RESET_TOKENS.pop(token, None)
+    rec   = get_reset_token(token)
     if not rec or rec.get("type") != "verify":
-        return "<h3>❌ Invalid or expired link.</h3>", 400
+        return "<h3>❌ Invalid or expired verification link.</h3>", 400
+    consume_reset_token(token)
     try:
         conn = get_conn()
         qexec(conn, "UPDATE citizens SET verified=1 WHERE email=%s", (rec["email"],))
@@ -606,11 +652,10 @@ def auth_forgot():
         return err("Database error", 500)
 
     rtok = make_token(email)
-    RESET_TOKENS[rtok] = {"email": email, "type": "reset", "at": datetime.now().isoformat()}
+    save_reset_token(email, rtok, "reset")
 
     threading.Thread(target=send_reset_email, args=(email, row.get("name",""), rtok), daemon=True).start()
 
-    # Test mode — print link
     if not USE_EMAIL:
         reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={rtok}"
         print(f"\n  [TEST] Password reset link:\n  {reset_url}\n")
@@ -630,18 +675,11 @@ def auth_reset():
     if len(new_pw) < 6:
         return err("Password kam se kam 6 characters ka hona chahiye।")
 
-    rec = RESET_TOKENS.pop(token, None)
+    rec = get_reset_token(token)
     if not rec or rec.get("type") != "reset":
         return err("Reset link invalid ya expire ho gaya। Dobara 'Forgot Password' try karein।")
 
-    # Check token age (1 hour)
-    try:
-        age = (datetime.now() - datetime.fromisoformat(rec["at"])).total_seconds()
-        if age > 3600:
-            return err("Reset link expire ho gaya। Dobara try karein।")
-    except:
-        pass
-
+    consume_reset_token(token)
     pw_hash = hash_pw(new_pw)
     email   = rec["email"]
     try:
