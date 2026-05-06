@@ -616,7 +616,7 @@ def auth_forgot():
     save_reset_token(email, rtok, "reset")
     threading.Thread(target=send_reset_email, args=(email, row.get("name",""), rtok), daemon=True).start()
     if not USE_EMAIL:
-        reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={rtok}"
+       reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/reset-password.html?token={rtok}&email={email}"
         print(f"\n  [TEST] Password reset link:\n  {reset_url}\n")
     return jsonify({"success": True, "message": "Password reset link aapke email pe bheja gaya! Inbox check karein।"})
 
