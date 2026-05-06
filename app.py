@@ -16,9 +16,10 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
-# ── AUTO DB INIT (Railway/gunicorn ke liye — __main__ wait nahi karta) ────────
+# Auto DB init — Railway/gunicorn ke liye
 from database import init_db as _init_db
 _init_db()
+
 # ── ENV CONFIG ───────────────────────────────────────────────────────────────
 DATABASE_URL   = os.environ.get('DATABASE_URL', '')
 TWILIO_SID     = os.environ.get('TWILIO_ACCOUNT_SID', '')
@@ -128,8 +129,7 @@ def verify_otp_svc(mobile, otp):
         if USE_POSTGRES:
             qexec(conn, "INSERT INTO citizens(mobile,verified) VALUES(%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET verified=TRUE", (mobile,))
         else:
-            qexec(conn, "INSERT OR IGNORE INTO citizens(mobile,verified) VALUES(?,1)", (mobile,))
-            qexec(conn, "UPDATE citizens SET verified=1 WHERE mobile=?", (mobile,))
+            qexec(conn, "INSERT OR REPLACE INTO citizens(mobile,verified) VALUES(?,1)", (mobile,))
         conn.commit()
         conn.close()
 
@@ -435,37 +435,46 @@ def create_session(mobile, name):
 
 @app.route("/api/auth/register", methods=["POST"])
 def auth_register():
-    d = request.get_json() or {}
+    d      = request.get_json() or {}
     mobile = fmt_mobile(d.get("mobile", ""))
-    name = d.get("name", "").strip()
-    pw = d.get("password", "").strip()
-    email = d.get("email", "").strip()
-    otp = d.get("otp", "").strip()
-    
-    if not mobile or not name or not pw:
-        return err("mobile, name aur password required hai।")
+    name   = d.get("name", "").strip()
+    pw     = d.get("password", "").strip()
+    email  = d.get("email", "").strip().lower()
+    otp    = d.get("otp", "").strip()
+
+    if not name or not pw:
+        return err("Naam aur password required hai।")
+    if not mobile and not email:
+        return err("Email ya mobile required hai।")
     if len(pw) < 6:
         return err("Password kam se kam 6 characters ka hona chahiye।")
-    
-    if otp:
+
+    # OTP verify only if mobile provided
+    if otp and mobile:
         result = verify_otp_svc(mobile, otp)
         if not result["success"]:
             return jsonify(result)
-    
-    pw_hash = hash_pw(pw)
+
+    pw_hash  = hash_pw(pw)
+    # Use email as mobile placeholder if no mobile given
+    mob_key  = mobile if mobile else email
     try:
         conn = get_conn()
         if USE_POSTGRES:
-            qexec(conn, "INSERT INTO citizens(mobile,name,email,password_hash,verified) VALUES(%s,%s,%s,%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET name=%s, email=%s, password_hash=%s, verified=TRUE",
-                  (mobile, name, email, pw_hash, name, email, pw_hash))
+            qexec(conn,
+                "INSERT INTO citizens(mobile,name,email,password_hash,verified) VALUES(%s,%s,%s,%s,TRUE) "
+                "ON CONFLICT(mobile) DO UPDATE SET name=%s, email=%s, password_hash=%s, verified=TRUE",
+                (mob_key, name, email, pw_hash, name, email, pw_hash))
         else:
-            qexec(conn, "INSERT OR REPLACE INTO citizens(mobile,name,email,password_hash,verified) VALUES(?,?,?,?,1)",
-                  (mobile, name, email, pw_hash))
+            qexec(conn,
+                "INSERT OR REPLACE INTO citizens(mobile,name,email,password_hash,verified) VALUES(?,?,?,?,1)",
+                (mob_key, name, email, pw_hash))
         conn.commit()
         conn.close()
-        token = create_session(mobile, name)
-        print(f"[AUTH] ✅ Registered: {mobile} ({name})")
-        return jsonify({"success": True, "token": token, "user": {"mobile": mobile, "name": name, "email": email}})
+        token = create_session(mob_key, name)
+        print(f"[AUTH] ✅ Registered: {mob_key} ({name})")
+        return jsonify({"success": True, "message": "Registration successful!", "token": token,
+                        "user": {"mobile": mobile, "name": name, "email": email}})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -475,27 +484,32 @@ def auth_register():
 def auth_login():
     d = request.get_json() or {}
     mobile = fmt_mobile(d.get("mobile", ""))
-    pw = d.get("password", "").strip()
-    
-    if not mobile or not pw:
-        return err("Mobile aur password dono required hain।")
-    
+    email  = d.get("email", "").strip().lower()
+    pw     = d.get("password", "").strip()
+
+    if not (mobile or email) or not pw:
+        return err("Email/Mobile aur password required hain।")
+
     try:
         conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
+        if email:
+            cur = qexec(conn, "SELECT * FROM citizens WHERE LOWER(email)=%s", (email,))
+        else:
+            cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
         row = to_dict(cur, cur.fetchone())
         conn.close()
-        
+
         if not row:
-            return err("Yeh mobile number registered nahi hai। Pehle register karein।")
+            return err("Yeh email/mobile registered nahi hai। Pehle register karein।")
         if not row.get("password_hash"):
             return err("Is account ka password set nahi hai। OTP se login karein।")
         if row["password_hash"] != hash_pw(pw):
             return err("Password galat hai। Dobara try karein।")
-        
-        token = create_session(mobile, row.get("name", ""))
-        print(f"[AUTH] ✅ Login: {mobile} ({row.get('name','')})")
-        return jsonify({"success": True, "token": token, "user": {"mobile": mobile, "name": row.get("name",""), "email": row.get("email","")}})
+
+        mob = row.get("mobile", email)
+        token = create_session(mob, row.get("name", ""))
+        print(f"[AUTH] ✅ Login: {mob} ({row.get('name','')})")
+        return jsonify({"success": True, "token": token, "user": {"mobile": mob, "name": row.get("name",""), "email": row.get("email","")}})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -541,25 +555,35 @@ def auth_login_otp():
 
 @app.route("/api/auth/forgot-password", methods=["POST"])
 def auth_forgot():
-    """Send OTP for password reset"""
     d = request.get_json() or {}
     mobile = fmt_mobile(d.get("mobile", ""))
-    if not mobile:
-        return err("Mobile number required hai।")
-    
-    # Check if mobile exists
+    email  = d.get("email", "").strip().lower()
+
+    if not mobile and not email:
+        return err("Email ya Mobile required hai।")
+
     try:
         conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
+        if email:
+            cur = qexec(conn, "SELECT * FROM citizens WHERE LOWER(email)=%s", (email,))
+        else:
+            cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
         row = to_dict(cur, cur.fetchone())
         conn.close()
-        
+
         if not row:
-            return err("Yeh mobile number registered nahi hai। Pehle register karein।")
+            return err("Yeh email/mobile registered nahi hai। Pehle register karein।")
+
+        # Use mobile from DB record to send OTP
+        mob = row.get("mobile", mobile)
     except Exception as e:
         print(f"[ERROR] {e}")
-    
-    return jsonify(send_otp_svc(mobile))
+        return err("Database error", 500)
+
+    result = send_otp_svc(mob)
+    # Tell frontend reset link sent (consistent message)
+    result["message"] = "Reset OTP sent! Check your mobile."
+    return jsonify(result)
 
 
 # FIXED: Verify OTP endpoint for forgot password
@@ -610,6 +634,13 @@ def auth_reset():
     try:
         conn = get_conn()
         qexec(conn, "UPDATE citizens SET password_hash=%s, verified=1 WHERE mobile=%s", (pw_hash, mobile))
+        
+        if USE_POSTGRES:
+            qexec(conn, "INSERT INTO citizens(mobile,password_hash,verified) VALUES(%s,%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET password_hash=%s, verified=TRUE",
+                  (mobile, pw_hash, pw_hash))
+        else:
+            qexec(conn, "INSERT OR IGNORE INTO citizens(mobile,password_hash,verified) VALUES(?,?,1)", (mobile, pw_hash))
+        
         conn.commit()
         conn.close()
         
