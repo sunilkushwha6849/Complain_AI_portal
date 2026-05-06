@@ -417,137 +417,170 @@ def classify_only():
 def hash_pw(pw):
     return hashlib.sha256(pw.strip().encode()).hexdigest()
 
-def make_token(mobile):
-    return hashlib.sha256(f"{mobile}-{secrets.token_hex(16)}".encode()).hexdigest()[:32]
+def make_token(key):
+    return hashlib.sha256(f"{key}-{secrets.token_hex(16)}".encode()).hexdigest()[:32]
 
 SESSIONS = {}
+RESET_TOKENS = {}  # email -> token (for password reset)
 
 def get_session(token):
     return SESSIONS.get(token)
 
-def create_session(mobile, name):
-    token = make_token(mobile)
-    SESSIONS[token] = {"mobile": mobile, "name": name, "at": datetime.now().isoformat()}
+def create_session(email, name):
+    token = make_token(email)
+    SESSIONS[token] = {"email": email, "name": name, "at": datetime.now().isoformat()}
     return token
 
+def send_verification_email(email, name, token):
+    """Send email verification link"""
+    verify_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/verify-email?token={token}"
+    if not USE_EMAIL:
+        print(f"\n  [EMAIL TEST] Verification link for {email}:\n  {verify_url}\n")
+        return
+    try:
+        headers = {"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"}
+        requests.post("https://api.resend.com/emails", headers=headers, json={
+            "from": "GrievAI Portal <noreply@resend.dev>",
+            "to": [email],
+            "subject": "✅ GrievAI — Email Verify Karein",
+            "html": f"""<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:30px;border-radius:16px;background:#f9f9f9;">
+                <h2 style="color:#FF6200;">🏛️ GrievAI Portal</h2>
+                <p>Namaste <b>{name}</b>!</p>
+                <p>Aapka account verify karne ke liye neeche click karein:</p>
+                <a href="{verify_url}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#FF6200;color:white;border-radius:30px;text-decoration:none;font-weight:bold;">✅ Email Verify Karein</a>
+                <p style="color:#999;font-size:12px;">Yeh link 24 ghante valid hai. Agar aapne register nahi kiya toh ignore karein.</p>
+            </div>"""
+        }, timeout=15)
+        print(f"[EMAIL] ✅ Verification email sent → {email}")
+    except Exception as e:
+        print(f"[EMAIL] ❌ Verification email error: {e}")
 
-# ── AUTH ROUTES (COMPLETELY FIXED) ────────────────────────────────────────────
+def send_reset_email(email, name, token):
+    """Send password reset link"""
+    reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={token}"
+    if not USE_EMAIL:
+        print(f"\n  [EMAIL TEST] Password reset link for {email}:\n  {reset_url}\n")
+        return True
+    try:
+        headers = {"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"}
+        r = requests.post("https://api.resend.com/emails", headers=headers, json={
+            "from": "GrievAI Portal <noreply@resend.dev>",
+            "to": [email],
+            "subject": "🔑 GrievAI — Password Reset Link",
+            "html": f"""<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:30px;border-radius:16px;background:#f9f9f9;">
+                <h2 style="color:#FF6200;">🏛️ GrievAI Portal</h2>
+                <p>Namaste <b>{name}</b>!</p>
+                <p>Password reset karne ke liye neeche click karein:</p>
+                <a href="{reset_url}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#FF6200;color:white;border-radius:30px;text-decoration:none;font-weight:bold;">🔑 Password Reset Karein</a>
+                <p style="color:#999;font-size:12px;">Yeh link 1 ghante valid hai. Agar aapne request nahi kiya toh ignore karein.</p>
+            </div>"""
+        }, timeout=15)
+        print(f"[EMAIL] ✅ Reset email sent → {email}")
+        return True
+    except Exception as e:
+        print(f"[EMAIL] ❌ Reset email error: {e}")
+        return False
+
+
+# ── AUTH ROUTES — EMAIL ONLY ──────────────────────────────────────────────────
 
 @app.route("/api/auth/register", methods=["POST"])
 def auth_register():
-    d      = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
-    name   = d.get("name", "").strip()
-    pw     = d.get("password", "").strip()
-    email  = d.get("email", "").strip().lower()
-    otp    = d.get("otp", "").strip()
+    d     = request.get_json() or {}
+    name  = d.get("name", "").strip()
+    email = d.get("email", "").strip().lower()
+    pw    = d.get("password", "").strip()
 
-    if not name or not pw:
-        return err("Naam aur password required hai।")
-    if not mobile and not email:
-        return err("Email ya mobile required hai।")
+    if not name or not email or not pw:
+        return err("Naam, email aur password required hain।")
+    if "@" not in email:
+        return err("Sahi email address dalein।")
     if len(pw) < 6:
         return err("Password kam se kam 6 characters ka hona chahiye।")
 
-    # OTP verify only if mobile provided
-    if otp and mobile:
-        result = verify_otp_svc(mobile, otp)
-        if not result["success"]:
-            return jsonify(result)
+    pw_hash = hash_pw(pw)
+    # Verification token
+    vtok = make_token(email)
 
-    pw_hash  = hash_pw(pw)
-    # Use email as mobile placeholder if no mobile given
-    mob_key  = mobile if mobile else email
     try:
         conn = get_conn()
+        # Check already registered
+        cur = qexec(conn, "SELECT id, verified FROM citizens WHERE email=%s", (email,))
+        row = to_dict(cur, cur.fetchone())
+        if row and row.get("verified"):
+            conn.close()
+            return err("Yeh email already registered hai। Login karein।")
+
         if USE_POSTGRES:
             qexec(conn,
-                "INSERT INTO citizens(mobile,name,email,password_hash,verified) VALUES(%s,%s,%s,%s,TRUE) "
-                "ON CONFLICT(mobile) DO UPDATE SET name=%s, email=%s, password_hash=%s, verified=TRUE",
-                (mob_key, name, email, pw_hash, name, email, pw_hash))
+                "INSERT INTO citizens(email,name,password_hash,verified) VALUES(%s,%s,%s,FALSE) "
+                "ON CONFLICT(email) DO UPDATE SET name=%s, password_hash=%s, verified=FALSE",
+                (email, name, pw_hash, name, pw_hash))
         else:
             qexec(conn,
-                "INSERT OR REPLACE INTO citizens(mobile,name,email,password_hash,verified) VALUES(?,?,?,?,1)",
-                (mob_key, name, email, pw_hash))
+                "INSERT OR REPLACE INTO citizens(email,name,password_hash,verified) VALUES(?,?,?,0)",
+                (email, name, pw_hash))
         conn.commit()
         conn.close()
-        token = create_session(mob_key, name)
-        print(f"[AUTH] ✅ Registered: {mob_key} ({name})")
-        return jsonify({"success": True, "message": "Registration successful!", "token": token,
-                        "user": {"mobile": mobile, "name": name, "email": email}})
+
+        # Send verification email in background
+        threading.Thread(target=send_verification_email, args=(email, name, vtok), daemon=True).start()
+        # Store token temporarily (in-memory, good for single-server)
+        RESET_TOKENS[vtok] = {"email": email, "type": "verify", "at": datetime.now().isoformat()}
+
+        print(f"[AUTH] ✅ Registered: {email} ({name})")
+        return jsonify({
+            "success": True,
+            "message": "Registration successful! Verification email bheja gaya — inbox check karein।",
+            "email": email
+        })
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/auth/verify-email", methods=["GET"])
+def verify_email():
+    token = request.args.get("token", "")
+    rec   = RESET_TOKENS.pop(token, None)
+    if not rec or rec.get("type") != "verify":
+        return "<h3>❌ Invalid or expired link.</h3>", 400
+    try:
+        conn = get_conn()
+        qexec(conn, "UPDATE citizens SET verified=1 WHERE email=%s", (rec["email"],))
+        conn.commit()
+        conn.close()
+        return "<h3>✅ Email verified! Ab <a href='/login.html'>login karein</a>।</h3>"
+    except Exception as e:
+        return f"<h3>Error: {e}</h3>", 500
 
 
 @app.route("/api/auth/login", methods=["POST"])
 def auth_login():
-    d = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
-    email  = d.get("email", "").strip().lower()
-    pw     = d.get("password", "").strip()
+    d     = request.get_json() or {}
+    email = d.get("email", "").strip().lower()
+    pw    = d.get("password", "").strip()
 
-    if not (mobile or email) or not pw:
-        return err("Email/Mobile aur password required hain।")
+    if not email or not pw:
+        return err("Email aur password required hain।")
 
     try:
         conn = get_conn()
-        if email:
-            cur = qexec(conn, "SELECT * FROM citizens WHERE LOWER(email)=%s", (email,))
-        else:
-            cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
-        row = to_dict(cur, cur.fetchone())
+        cur  = qexec(conn, "SELECT * FROM citizens WHERE email=%s", (email,))
+        row  = to_dict(cur, cur.fetchone())
         conn.close()
 
         if not row:
-            return err("Yeh email/mobile registered nahi hai। Pehle register karein।")
+            return err("Yeh email registered nahi hai। Pehle register karein।")
         if not row.get("password_hash"):
-            return err("Is account ka password set nahi hai। OTP se login karein।")
+            return err("Is account ka password set nahi hai।")
         if row["password_hash"] != hash_pw(pw):
             return err("Password galat hai। Dobara try karein।")
 
-        mob = row.get("mobile", email)
-        token = create_session(mob, row.get("name", ""))
-        print(f"[AUTH] ✅ Login: {mob} ({row.get('name','')})")
-        return jsonify({"success": True, "token": token, "user": {"mobile": mob, "name": row.get("name",""), "email": row.get("email","")}})
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/auth/login-otp", methods=["POST"])
-def auth_login_otp():
-    d = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
-    otp = d.get("otp", "").strip()
-    name = d.get("name", "").strip()
-    
-    if not mobile or not otp:
-        return err("Mobile aur OTP required hain।")
-    
-    result = verify_otp_svc(mobile, otp)
-    if not result["success"]:
-        return jsonify(result)
-    
-    try:
-        conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
-        row = to_dict(cur, cur.fetchone())
-        
-        if not row:
-            n = name or "नागरिक"
-            if USE_POSTGRES:
-                qexec(conn, "INSERT INTO citizens(mobile,name,verified) VALUES(%s,%s,TRUE)", (mobile, n))
-            else:
-                qexec(conn, "INSERT OR IGNORE INTO citizens(mobile,name,verified) VALUES(?,?,1)", (mobile, n))
-            conn.commit()
-            cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
-            row = to_dict(cur, cur.fetchone())
-        conn.close()
-        
-        token = create_session(mobile, row.get("name") if row else name)
-        print(f"[AUTH] ✅ OTP Login: {mobile}")
-        return jsonify({"success": True, "token": token, "user": {"mobile": mobile, "name": row.get("name") if row else name, "email": row.get("email","") if row else ""}})
+        token = create_session(email, row.get("name", ""))
+        print(f"[AUTH] ✅ Login: {email}")
+        return jsonify({"success": True, "token": token,
+                        "user": {"email": email, "name": row.get("name", "")}})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -555,97 +588,69 @@ def auth_login_otp():
 
 @app.route("/api/auth/forgot-password", methods=["POST"])
 def auth_forgot():
-    d = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
-    email  = d.get("email", "").strip().lower()
+    d     = request.get_json() or {}
+    email = d.get("email", "").strip().lower()
 
-    if not mobile and not email:
-        return err("Email ya Mobile required hai।")
+    if not email:
+        return err("Email required hai।")
 
     try:
         conn = get_conn()
-        if email:
-            cur = qexec(conn, "SELECT * FROM citizens WHERE LOWER(email)=%s", (email,))
-        else:
-            cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
-        row = to_dict(cur, cur.fetchone())
+        cur  = qexec(conn, "SELECT * FROM citizens WHERE email=%s", (email,))
+        row  = to_dict(cur, cur.fetchone())
         conn.close()
 
         if not row:
-            return err("Yeh email/mobile registered nahi hai। Pehle register karein।")
-
-        # Use mobile from DB record to send OTP
-        mob = row.get("mobile", mobile)
+            return err("Yeh email registered nahi hai। Pehle register karein।")
     except Exception as e:
-        print(f"[ERROR] {e}")
         return err("Database error", 500)
 
-    result = send_otp_svc(mob)
-    # Tell frontend reset link sent (consistent message)
-    result["message"] = "Reset OTP sent! Check your mobile."
-    return jsonify(result)
+    rtok = make_token(email)
+    RESET_TOKENS[rtok] = {"email": email, "type": "reset", "at": datetime.now().isoformat()}
+
+    threading.Thread(target=send_reset_email, args=(email, row.get("name",""), rtok), daemon=True).start()
+
+    # Test mode — print link
+    if not USE_EMAIL:
+        reset_url = f"{os.environ.get('APP_URL','http://localhost:8000')}/login.html?reset={rtok}"
+        print(f"\n  [TEST] Password reset link:\n  {reset_url}\n")
+
+    return jsonify({"success": True,
+                    "message": "Password reset link aapke email pe bheja gaya! Inbox check karein।"})
 
 
-# FIXED: Verify OTP endpoint for forgot password
-@app.route("/api/auth/verify-reset-otp", methods=["POST"])
-def verify_reset_otp():
-    """Verify OTP and return success"""
-    d = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
-    otp = d.get("otp", "").strip()
-    
-    if not mobile or not otp:
-        return err("Mobile aur OTP required hain।")
-    
-    result = verify_otp_svc(mobile, otp)
-    return jsonify(result)
-
-
-# FIXED: Reset password - NO OTP PARAMETER NEEDED
 @app.route("/api/auth/reset-password", methods=["POST"])
 def auth_reset():
-    """Set new password - OTP already verified by frontend, so no OTP param needed"""
-    d = request.get_json() or {}
-    mobile = fmt_mobile(d.get("mobile", ""))
+    d      = request.get_json() or {}
+    token  = d.get("token", "").strip()
     new_pw = d.get("new_password", "").strip()
-    
-    print(f"[DEBUG] Reset password request - Mobile: {mobile}")
-    
-    if not mobile or not new_pw:
-        return err("Mobile aur new_password required hain।")
+
+    if not token or not new_pw:
+        return err("Token aur new_password required hain।")
     if len(new_pw) < 6:
         return err("Password kam se kam 6 characters ka hona chahiye।")
-    
-    # Check if mobile exists
+
+    rec = RESET_TOKENS.pop(token, None)
+    if not rec or rec.get("type") != "reset":
+        return err("Reset link invalid ya expire ho gaya। Dobara 'Forgot Password' try karein।")
+
+    # Check token age (1 hour)
     try:
-        conn = get_conn()
-        cur = qexec(conn, "SELECT * FROM citizens WHERE mobile=%s", (mobile,))
-        row = to_dict(cur, cur.fetchone())
-        conn.close()
-        
-        if not row:
-            return err("Yeh mobile number registered nahi hai।")
-    except Exception as e:
-        print(f"[ERROR] {e}")
-        return err("Database error", 500)
-    
-    # Update password
+        age = (datetime.now() - datetime.fromisoformat(rec["at"])).total_seconds()
+        if age > 3600:
+            return err("Reset link expire ho gaya। Dobara try karein।")
+    except:
+        pass
+
     pw_hash = hash_pw(new_pw)
+    email   = rec["email"]
     try:
         conn = get_conn()
-        qexec(conn, "UPDATE citizens SET password_hash=%s, verified=1 WHERE mobile=%s", (pw_hash, mobile))
-        
-        if USE_POSTGRES:
-            qexec(conn, "INSERT INTO citizens(mobile,password_hash,verified) VALUES(%s,%s,TRUE) ON CONFLICT(mobile) DO UPDATE SET password_hash=%s, verified=TRUE",
-                  (mobile, pw_hash, pw_hash))
-        else:
-            qexec(conn, "INSERT OR IGNORE INTO citizens(mobile,password_hash,verified) VALUES(?,?,1)", (mobile, pw_hash))
-        
+        qexec(conn, "UPDATE citizens SET password_hash=%s, verified=1 WHERE email=%s", (pw_hash, email))
         conn.commit()
         conn.close()
-        
-        print(f"[AUTH] ✅ Password reset successful: {mobile}")
-        return jsonify({"success": True, "message": "Password successfully reset! Ab login karein।"})
+        print(f"[AUTH] ✅ Password reset: {email}")
+        return jsonify({"success": True, "message": "Password reset ho gaya! Ab login karein।"})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -654,7 +659,7 @@ def auth_reset():
 @app.route("/api/auth/me", methods=["GET"])
 def auth_me():
     token = request.headers.get("X-Auth-Token", "")
-    sess = get_session(token)
+    sess  = get_session(token)
     if not sess:
         return jsonify({"authenticated": False}), 401
     return jsonify({"authenticated": True, "user": sess})
